@@ -1,278 +1,282 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0">
+    <title>Skins em Estoque - Borjão Skins</title>
 
-<title>Skins em Estoque - Borjão Skins</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'Kenyan Coffee';
+            src: url('fonts/KENYAN_COFFEE_RG.TTF') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
 
-<style>
-@font-face {
-  font-family: 'Kenyan Coffee';
-  src: url('fonts/KENYAN_COFFEE_RG.TTF') format('truetype');
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+        :root {
+            --purple: #9431ce;
+            --black: #000000;
+            --dark-gray: #0a0a0a;
+            --purple-glow: rgba(148, 49, 206, 0.4);
+        }
 
-:root {
-  --purple: #9431ce;
-  --black: #000000;
-  --dark-gray: #0a0a0a;
-  --purple-glow: rgba(148, 49, 206, 0.4);
-}
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--black);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-body {
-  font-family: 'Rajdhani', sans-serif;
-  background: var(--black);
-  color: white;
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+        .bg-animation {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+        }
 
-/* ================= BACKGROUND ================= */
-.bg-animation {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background:
+                radial-gradient(circle at 20% 50%, var(--purple-glow) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, var(--purple-glow) 0%, transparent 50%);
+            animation: bgRotate 20s linear infinite;
+        }
 
-.bg-animation::before {
-  content: '';
-  position: absolute;
-  inset: -50%;
-  background:
-    radial-gradient(circle at 20% 50%, var(--purple-glow) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, var(--purple-glow) 0%, transparent 50%);
-  animation: bgRotate 20s linear infinite;
-}
+        @keyframes bgRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-@keyframes bgRotate {
-  to { transform: rotate(360deg); }
-}
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-/* ================= LAYOUT ================= */
-.container {
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
 
-/* ================= HEADER ================= */
-.header {
-  text-align: center;
-  margin-bottom: 30px;
-}
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+        }
 
-.logo {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 15px;
-}
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px var(--purple-glow));
+        }
 
-.logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+        .title {
+            font-family: 'Kenyan Coffee', sans-serif;
+            font-size: 28px;
+            color: var(--purple);
+            margin-bottom: 10px;
+        }
 
-.title {
-  font-family: 'Kenyan Coffee', sans-serif;
-  font-size: 28px;
-  color: var(--purple);
-}
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255,255,255,0.7);
+        }
 
-.subtitle {
-  opacity: .7;
-}
+        .page-indicator {
+            text-align: center;
+            font-family: 'Kenyan Coffee', sans-serif;
+            font-size: 20px;
+            color: var(--purple);
+            margin-bottom: 20px;
+        }
 
-/* ================= INDICADOR ================= */
-.page-indicator {
-  text-align: center;
-  font-family: 'Kenyan Coffee', sans-serif;
-  font-size: 20px;
-  color: var(--purple);
-  margin-bottom: 20px;
-}
+        .carousel-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
 
-/* ================= CAROUSEL ================= */
-.carousel-container {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 30px;
-}
+        .card-wrapper {
+            width: 100%;
+            max-width: 800px;
+            padding: 12px;
+            border-radius: 20px;
+            background: rgba(10,10,10,0.85);
+            border: 2px solid var(--purple);
+            box-shadow: 0 10px 40px var(--purple-glow);
+        }
 
-/* ⬇️⬇️⬇️ CARD ALTERADO ⬇️⬇️⬇️ */
-.card-wrapper {
-  width: 100%;
-  max-width: 760px;
-  padding: 12px; /* espaço lateral */
-  border-radius: 22px;
-  background: rgba(10,10,10,0.85);
-  border: 2px solid var(--purple);
-  box-shadow: 0 10px 40px var(--purple-glow);
-}
+        .card-image-container {
+            width: 100%;
+            max-height: 70vh;
+            overflow: auto;
+            border-radius: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
 
-/* container com scroll interno */
-.card-image-container {
-  width: 100%;
-  max-height: 65vh; /* controla altura no mobile */
-  overflow-y: auto;
-  border-radius: 16px;
+        .card-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
 
-  /* UX mobile */
-  touch-action: pan-y;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-}
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            background: rgba(148,49,206,0.85);
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+        }
 
-/* imagem */
-.card-image {
-  width: 100%;
-  height: auto;
-  display: block;
-  user-select: none;
-  transform-origin: center;
-}
+        .nav-btn.prev { left: 10px; }
+        .nav-btn.next { right: 10px; }
 
-/* scrollbar discreta */
-.card-image-container::-webkit-scrollbar {
-  width: 4px;
-}
+        .cta-section {
+            background: rgba(10,10,10,0.9);
+            border: 2px solid var(--purple);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
 
-.card-image-container::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.3);
-  border-radius: 10px;
-}
+        .cta-text {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
 
-/* ================= BOTÕES ================= */
-.nav-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(148,49,206,0.8);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-}
+        .cta-highlight {
+            color: #00ff88;
+            font-weight: 700;
+        }
 
-.nav-btn.prev { left: 10px; }
-.nav-btn.next { right: 10px; }
+        .whatsapp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 36px;
+            background: linear-gradient(135deg,#25D366,#128C7E);
+            border-radius: 50px;
+            color: white;
+            font-family: 'Kenyan Coffee', sans-serif;
+            font-size: 20px;
+            text-decoration: none;
+        }
 
-/* ================= CTA ================= */
-.cta-section {
-  background: rgba(10,10,10,.9);
-  border: 2px solid var(--purple);
-  border-radius: 20px;
-  padding: 25px;
-  text-align: center;
-}
-
-.whatsapp-btn {
-  display: inline-flex;
-  gap: 10px;
-  padding: 16px 34px;
-  border-radius: 50px;
-  background: linear-gradient(135deg,#25D366,#128C7E);
-  color: #fff;
-  font-family: 'Kenyan Coffee', sans-serif;
-  text-decoration: none;
-}
-
-/* ================= MOBILE ================= */
-@media (max-width: 768px) {
-  .card-image-container {
-    max-height: 55vh;
-  }
-}
-</style>
+        @media (max-width: 768px) {
+            .card-image-container {
+                max-height: 60vh;
+            }
+        }
+    </style>
 </head>
 
 <body>
 <div class="bg-animation"></div>
 
-<div class="header">
-  <a href="index.html" style="display:inline-block">
-    <div class="logo">
-      <img src="images/logodb.png" alt="Logo Borjão Skins">
-    </div>
-  </a>
-    <h1 class="title">🔫 SKINS EM ESTOQUE</h1>
-    <p class="subtitle">Confira todas as skins disponíveis</p>
-  </div>
+<div class="container">
 
-  <div class="page-indicator" id="pageIndicator">PAG 1</div>
+    <!-- HEADER COM LOGO CLICÁVEL -->
+    <div class="header">
+        <a href="index.html">
+            <div class="logo">
+                <img src="images/logodb.png" alt="Logo Borjão Skins">
+            </div>
+        </a>
 
-  <div class="carousel-container">
-    <div class="nav-btn prev" onclick="previousCard()">‹</div>
-
-    <div class="card-wrapper">
-      <div class="card-image-container" id="imageContainer">
-        <img id="cardImage" class="card-image" src="">
-      </div>
+        <h1 class="title">🔫 SKINS EM ESTOQUE</h1>
+        <p class="subtitle">Confira todas as skins disponíveis</p>
     </div>
 
-    <div class="nav-btn next" onclick="nextCard()">›</div>
-  </div>
+    <div class="page-indicator" id="pageIndicator">PAG 1</div>
 
-  <div class="cta-section">
-    <a class="whatsapp-btn" target="_blank"
-       href="https://wa.me/5521983774946?text=Olá! Gostaria de encomendar uma skin.">
-      💬 Encomendar no WhatsApp
-    </a>
-  </div>
+    <div class="carousel-container">
+        <div class="nav-btn prev" onclick="previousCard()">‹</div>
+
+        <div class="card-wrapper">
+            <div class="card-image-container">
+                <img id="cardImage" class="card-image" src="">
+            </div>
+        </div>
+
+        <div class="nav-btn next" onclick="nextCard()">›</div>
+    </div>
+
+    <div class="cta-section">
+        <p class="cta-text">
+            Não encontrou a skin que queria em estoque?<br>
+            <span class="cta-highlight">Faça uma encomenda que chega em até 12 horas!</span>
+        </p>
+        <a class="whatsapp-btn" href="https://wa.me/5521983774946" target="_blank">
+            💬 Encomendar no WhatsApp
+        </a>
+    </div>
 
 </div>
 
 <script>
-/* SEU JS ORIGINAL – SEM ALTERAÇÃO */
-const cards = [
-  'images/card1.jpeg',
-  'images/card2.jpeg',
-  'images/card3.jpeg',
-  'images/card4.jpeg'
-];
+    const cards = [
+        'images/card1.jpeg',
+        'images/card2.jpeg',
+        'images/card3.jpeg',
+        'images/card4.jpeg'
+    ];
 
-let currentCard = 0;
-const cardImage = document.getElementById('cardImage');
-const pageIndicator = document.getElementById('pageIndicator');
+    let currentCard = 0;
+    const cardImage = document.getElementById('cardImage');
+    const pageIndicator = document.getElementById('pageIndicator');
 
-function loadCard(i){
-  cardImage.src = cards[i];
-  pageIndicator.textContent = `PAG ${i+1}`;
-}
+    function loadCard(index) {
+        cardImage.src = cards[index];
+        pageIndicator.textContent = `PAG ${index + 1}`;
+    }
 
-function nextCard(){
-  currentCard = (currentCard + 1) % cards.length;
-  loadCard(currentCard);
-}
+    function nextCard() {
+        currentCard = (currentCard + 1) % cards.length;
+        loadCard(currentCard);
+    }
 
-function previousCard(){
-  currentCard = (currentCard - 1 + cards.length) % cards.length;
-  loadCard(currentCard);
-}
+    function previousCard() {
+        currentCard = (currentCard - 1 + cards.length) % cards.length;
+        loadCard(currentCard);
+    }
 
-loadCard(currentCard);
+    loadCard(currentCard);
 </script>
+
 </body>
 </html>
