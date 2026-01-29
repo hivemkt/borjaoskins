@@ -726,20 +726,26 @@
             <img src="images/logodb.png" alt="Logo Borjão Skins">
         </div>
 
-        <h1 class="main-title">VOCÊ DESEJA VENDER SEU INVENTÁRIO TODO OU ITENS ESPECÍFICOS?</h1>
+        <h1 class="main-title">O QUE VOCÊ DESEJA FAZER?</h1>
         <p class="subtitle">💰 Pagamentos via PIX • Melhor preço do mercado</p>
 
         <div class="options">
             <div class="option-btn" onclick="openModal('complete')">
                 <div class="option-icon">📦</div>
-                <div class="option-title">INVENTÁRIO COMPLETO</div>
+                <div class="option-title">VENDER INVENTÁRIO</div>
                 <div class="option-desc">Venda todo seu inventário de uma vez</div>
             </div>
 
             <div class="option-btn" onclick="openModal('specific')">
                 <div class="option-icon">🎯</div>
-                <div class="option-title">ITENS SEPARADOS</div>
+                <div class="option-title">VENDER ITENS</div>
                 <div class="option-desc">Escolha quais skins deseja vender</div>
+            </div>
+
+            <div class="option-btn" onclick="openModal('upgrade')">
+                <div class="option-icon">⬆️</div>
+                <div class="option-title">FAZER UPGRADE</div>
+                <div class="option-desc">Troque suas skins por melhores</div>
             </div>
         </div>
     </div>
@@ -827,6 +833,55 @@
         </div>
     </div>
 
+    <!-- Modal Upgrade -->
+    <div class="modal" id="modalUpgrade">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('upgrade')">×</button>
+            <h2 class="modal-title">FAZER UPGRADE</h2>
+            <form id="formUpgrade" onsubmit="submitForm(event, 'upgrade')">
+                <div class="form-group">
+                    <label class="form-label">Nome Completo</label>
+                    <input type="text" class="form-input" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">WhatsApp (com DDD)</label>
+                    <input type="tel" class="form-input" name="whatsapp" placeholder="11999999999" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Trade Link
+                        <div class="info-icon">
+                            ℹ️
+                            <div class="info-tooltip">
+                                <strong>Para funcionar:</strong><br>
+                                • Inventário deve estar público<br>
+                                • Steam Guard ativo há 15+ dias<br>
+                                • Sem restrições de trade<br>
+                                • Link obtido nas configurações do Steam
+                            </div>
+                        </div>
+                    </label>
+                    <input type="url" class="form-input" name="tradelink" placeholder="https://steamcommunity.com/tradeoffer/new/?partner=..." required>
+                    <div class="error-message" id="errorTradeUpgrade">Link inválido! Use o formato correto do Steam.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Skin(s) que você TEM (do seu inventário)</label>
+                    <textarea class="form-textarea" name="skinFrom" placeholder="Liste as skins que você quer trocar. Ex:&#10;- AK-47 Redline FT&#10;- AWP Asiimov BS" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Skin que você QUER (upgrade desejado)</label>
+                    <textarea class="form-textarea" name="skinTo" placeholder="Qual skin você deseja receber? Ex:&#10;- M4A4 Howl FT" required></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">ENVIAR PEDIDO</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Sucesso -->
     <div class="modal" id="modalSuccess">
         <div class="modal-content">
@@ -868,7 +923,7 @@
         // ==========================================
         // EDITE AQUI PARA TROCAR USUÁRIO E SENHA:
         const ADMIN_USERNAME = "borjao";  // ← Trocar aqui o nome de usuário
-        const ADMIN_PASSWORD = "admin"; // ← Trocar aqui a senha
+        const ADMIN_PASSWORD = "senha123"; // ← Trocar aqui a senha
         // ==========================================
 
         // LocalStorage para pedidos
@@ -892,6 +947,8 @@
                 document.getElementById('modalComplete').classList.add('active');
             } else if (type === 'specific') {
                 document.getElementById('modalSpecific').classList.add('active');
+            } else if (type === 'upgrade') {
+                document.getElementById('modalUpgrade').classList.add('active');
             }
         }
 
@@ -902,6 +959,9 @@
             } else if (type === 'specific') {
                 document.getElementById('modalSpecific').classList.remove('active');
                 document.getElementById('formSpecific').reset();
+            } else if (type === 'upgrade') {
+                document.getElementById('modalUpgrade').classList.remove('active');
+                document.getElementById('formUpgrade').reset();
             } else if (type === 'success') {
                 document.getElementById('modalSuccess').classList.remove('active');
             }
@@ -916,7 +976,7 @@
             const tradelink = formData.get('tradelink');
             
             // Validar Trade Link
-            const errorId = type === 'complete' ? 'errorTradeComplete' : 'errorTradeSpecific';
+            const errorId = type === 'complete' ? 'errorTradeComplete' : (type === 'specific' ? 'errorTradeSpecific' : 'errorTradeUpgrade');
             const errorElement = document.getElementById(errorId);
             
             if (!validateTradeLink(tradelink)) {
@@ -925,14 +985,26 @@
             }
             errorElement.classList.remove('active');
             
+            // Definir tipo do pedido
+            let orderType = '';
+            if (type === 'complete') {
+                orderType = 'Inventário Completo';
+            } else if (type === 'specific') {
+                orderType = 'Itens Separados';
+            } else if (type === 'upgrade') {
+                orderType = 'Upgrade de Skins';
+            }
+            
             // Criar pedido
             const order = {
                 id: Date.now(),
-                type: type === 'complete' ? 'Inventário Completo' : 'Itens Separados',
+                type: orderType,
                 name: formData.get('name'),
                 whatsapp: formData.get('whatsapp'),
                 tradelink: tradelink,
                 items: formData.get('items') || 'N/A',
+                skinFrom: formData.get('skinFrom') || 'N/A',
+                skinTo: formData.get('skinTo') || 'N/A',
                 date: new Date().toLocaleString('pt-BR'),
                 status: 'pending'
             };
@@ -1026,6 +1098,20 @@
                         <div class="order-info">
                             <div class="order-label">Itens:</div>
                             <div class="order-value" style="white-space: pre-line;">${order.items}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${order.skinFrom !== 'N/A' ? `
+                        <div class="order-info">
+                            <div class="order-label">🔽 Skin(s) que o cliente TEM:</div>
+                            <div class="order-value" style="white-space: pre-line; background: rgba(255, 107, 107, 0.1); padding: 10px; border-radius: 8px; border-left: 3px solid #FF6B6B;">${order.skinFrom}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${order.skinTo !== 'N/A' ? `
+                        <div class="order-info">
+                            <div class="order-label">🔼 Skin que o cliente QUER:</div>
+                            <div class="order-value" style="white-space: pre-line; background: rgba(0, 255, 136, 0.1); padding: 10px; border-radius: 8px; border-left: 3px solid #00ff88;">${order.skinTo}</div>
                         </div>
                     ` : ''}
                     
