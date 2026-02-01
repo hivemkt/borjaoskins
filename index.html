@@ -363,8 +363,8 @@
 
         @media (max-width: 640px) {
             .logo {
-                width: 200px;
-                height: 200px;
+                width: 120px;
+                height: 120px;
                 margin: 0 auto 0px;
             }
 
@@ -374,8 +374,11 @@
             }
 
             .container {
-                padding: 30px 20px;
-                justify-content: center;
+                padding: 10px;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
             }
 
             .logo-section {
@@ -383,6 +386,7 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
+                margin-bottom: -10px;
             }
 
             .title {
@@ -394,10 +398,23 @@
                 letter-spacing: 2px;
             }
 
-            .link-btn {
-                padding: 20px 20px;
-                font-size: 18px;
+            .links {
+                flex: 1;
+                justify-content: center;
+                gap: 0px;
+                max-width: 90vw;
             }
+
+            .link-btn {
+                transform: scale(0.7);
+                margin: -30px 0;
+            }
+
+            .footer {
+                margin-top: 10px;
+                font-size: 11px;
+            }
+        }
 
             .link-title {
                 font-size: 18px;
