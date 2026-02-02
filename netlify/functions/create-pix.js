@@ -1,4 +1,7 @@
-const mercadopago = require('mercadopago');
+// Netlify Function: Create PIX Payment
+// Mercado Pago SDK v2
+
+const { MercadoPagoConfig, Payment } = require('mercadopago');
 
 exports.handler = async (event) => {
     // CORS Headers
@@ -27,33 +30,38 @@ exports.handler = async (event) => {
         // Parse body
         const { transaction_amount, description, payer, external_reference } = JSON.parse(event.body);
 
-        // Configure Mercado Pago
-        mercadopago.configure({
-            access_token: 'TEST-861897508909678-020211-a341f8eaad70bcc352afa028a9339b8d-136456359'
+        // Configure Mercado Pago Client (SDK v2 syntax)
+        const client = new MercadoPagoConfig({ 
+            accessToken: 'TEST-861897508909678-020211-a341f8eaad70bcc352afa028a9339b8d-136456359'
         });
+        
+        const payment = new Payment(client);
 
-        // Create payment
-        const payment = await mercadopago.payment.create({
-            transaction_amount: parseFloat(transaction_amount),
-            description: description,
-            payment_method_id: 'pix',
-            payer: {
-                email: payer.email,
-                first_name: payer.first_name,
-                last_name: payer.last_name || payer.first_name
-            },
-            external_reference: external_reference,
-            notification_url: 'https://www.borjaoskins.com/.netlify/functions/webhook'
+        // Create payment (SDK v2 syntax)
+        const result = await payment.create({
+            body: {
+                transaction_amount: parseFloat(transaction_amount),
+                description: description,
+                payment_method_id: 'pix',
+                payer: {
+                    email: payer.email,
+                    first_name: payer.first_name,
+                    last_name: payer.last_name || payer.first_name
+                },
+                external_reference: external_reference,
+                notification_url: 'https://www.borjaoskins.com/.netlify/functions/webhook'
+            }
         });
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify(payment.body)
+            body: JSON.stringify(result)
         };
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('❌ Error:', error);
+        console.error('❌ Error message:', error.message);
         
         return {
             statusCode: 500,
@@ -61,7 +69,7 @@ exports.handler = async (event) => {
             body: JSON.stringify({ 
                 error: 'Payment creation failed',
                 message: error.message,
-                details: error.response?.data || null
+                details: error.cause || error.response?.data || null
             })
         };
     }
