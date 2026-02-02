@@ -1095,11 +1095,17 @@
             const count = selectedNumbers.size;
             document.getElementById('selectedCount').textContent = count;
 
+            console.log('💰 Preço por número:', currentRaffle.price_per_number);
+            console.log('🔢 Quantidade:', count);
+            
             let total = count * currentRaffle.price_per_number;
+            
+            console.log('💵 Total calculado:', total);
 
             // Aplicar promoção se aplicável
             if (currentRaffle.promo_enabled && count >= currentRaffle.promo_min_numbers) {
                 total = total * (1 - currentRaffle.promo_discount / 100);
+                console.log('🎁 Total com desconto:', total);
             }
 
             document.getElementById('totalPrice').textContent = `R$ ${total.toFixed(2)}`;
@@ -1117,7 +1123,13 @@
             if (!phone || phone.trim() === '') return;
 
             try {
-                const totalAmount = parseFloat(document.getElementById('totalPrice').textContent.replace('R$ ', '').replace('.', '').replace(',', '.'));
+                // Pegar valor total exibido e converter corretamente
+                const totalText = document.getElementById('totalPrice').textContent;
+                console.log('📝 Total text:', totalText);
+                
+                const totalAmount = parseFloat(totalText.replace('R$ ', '').replace(',', '.'));
+                console.log('💰 Total amount:', totalAmount, 'Tipo:', typeof totalAmount);
+                
                 const numbersArray = Array.from(selectedNumbers);
 
                 // Salvar venda como pendente (reservado)
@@ -1149,15 +1161,14 @@
         // Gerar pagamento PIX com Mercado Pago
         async function generatePixPayment(saleData, amount, numbers) {
             try {
+                console.log('💳 Gerando PIX...');
+                console.log('💵 Amount recebido:', amount, 'Tipo:', typeof amount);
+                
                 // Mostrar modal de loading
                 document.getElementById('pixModal').style.display = 'flex';
                 document.getElementById('pixModal').classList.add('active');
                 document.getElementById('pixLoading').style.display = 'block';
                 document.getElementById('pixContent').style.display = 'none';
-
-                // Aqui você precisa fazer uma chamada para seu backend
-                // que vai usar a SDK do Mercado Pago server-side
-                // Por enquanto, vou mostrar como seria a estrutura:
 
                 const paymentData = {
                     transaction_amount: amount,
@@ -1170,6 +1181,9 @@
                     },
                     notification_url: window.location.origin + '/.netlify/functions/webhook',
                     external_reference: saleData.id
+                };
+                
+                console.log('📤 Enviando para MP:', paymentData);
                 };
 
                 // Chamar Netlify Function para criar pagamento PIX REAL
