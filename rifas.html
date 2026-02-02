@@ -1259,8 +1259,8 @@ async function generatePixPayment(saleData, amount, numbers) {
             }
         }
 
-        // Fechar modal PIX
-       function closePixModal(reload = true) {
+    // Fechar modal PIX
+function closePixModal(reload = true) {
     document.getElementById('pixModal').classList.remove('active');
     document.getElementById('pixModal').style.display = 'none';
 
@@ -1274,53 +1274,56 @@ async function generatePixPayment(saleData, amount, numbers) {
     }
 }
 
+// Verificar status do pagamento
+async function startPaymentCheck(paymentId, saleId) {
+    let attempts = 0;
+    const maxAttempts = 60; // 15 minutos (60 * 15s)
 
-        // Verificar status do pagamento
-        async function startPaymentCheck(paymentId, saleId) {
-            let attempts = 0;
-            const maxAttempts = 60; // 15 minutos (60 * 15s)
+    window.paymentCheckInterval = setInterval(async () => {
+        attempts++;
 
-            window.paymentCheckInterval = setInterval(async () => {
-                attempts++;
+        if (attempts >= maxAttempts) {
+            clearInterval(window.paymentCheckInterval);
+            alert('⏱️ Tempo expirado. Se você já pagou, seus números serão liberados automaticamente.');
+            closePixModal();
+            return;
+        }
 
-                if (attempts >= maxAttempts) {
-                    clearInterval(window.paymentCheckInterval);
-                    alert('⏱️ Tempo expirado. Se você já pagou, seus números serão liberados automaticamente.');
-                    closePixModal();
-                    return;
-                }
+        try {
+            const { data, error } = await supabaseClient
+                .from('raffle_sales')
+                .select('payment_status')
+                .eq('id', saleId)
+                .single();
 
-                try {
-                    // Verificar status no Supabase
-                    const { data, error } = await supabaseClient
-                        .from('raffle_sales')
-                        .select('payment_status')
-                        .eq('id', saleId)
-                        .single();
+            if (error) {
+                console.error('Erro Supabase:', error);
+                return;
+            }
 
-                    if (data?.payment_status === 'approved') {
-    clearInterval(window.paymentCheckInterval);
+            if (data?.payment_status === 'approved') {
+                clearInterval(window.paymentCheckInterval);
 
-    // some QR
-    document.getElementById('pixContent').style.display = 'none';
-    document.getElementById('pixLoading').style.display = 'none';
+                // some QR
+                document.getElementById('pixContent').style.display = 'none';
+                document.getElementById('pixLoading').style.display = 'none';
 
-    // mostra mini popup obrigado
-    document.getElementById('thankYouMini').style.display = 'block';
+                // mostra mini popup obrigado
+                document.getElementById('thankYouMini').style.display = 'block';
 
-    // fecha modal depois de 3s SEM reload imediato
-    setTimeout(() => {
-        closePixModal(true); // agora sim recarrega
-    }, 3000);
+                // fecha modal depois de 3s
+                setTimeout(() => {
+                    closePixModal(true);
+                }, 3000);
+            }
+
+        } catch (err) {
+            console.error('Erro ao verificar pagamento:', err);
+        }
+
+    }, 15000); // verifica a cada 15s
 }
 
-        // Simular pagamento (REMOVER EM PRODUÇÃO - apenas para testes)
-        function simulatePayment(saleId) {
-            alert('🔄 Sistema de pagamento em desenvolvimento.\n\nEm produção, aqui geraria o QR Code PIX do Mercado Pago.');
-            selectedNumbers.clear();
-            updateNumbersDisplay();
-            updateCheckout();
-        }
 
         // ADMIN FUNCTIONS
 
