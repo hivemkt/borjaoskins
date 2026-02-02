@@ -1,13 +1,7 @@
-// Netlify Function: Create PIX Payment
-// Path: netlify/functions/create-pix.js
-
 const mercadopago = require('mercadopago');
 
-// Configurar Access Token do Mercado Pago
-const ACCESS_TOKEN = 'TEST-861897508909678-020211-a341f8eaad70bcc352afa028a9339b8d-136456359';
-
-exports.handler = async (event, context) => {
-    // Permitir CORS
+exports.handler = async (event) => {
+    // CORS Headers
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
@@ -15,15 +9,12 @@ exports.handler = async (event, context) => {
         'Content-Type': 'application/json'
     };
 
-    // Handle preflight
+    // Handle OPTIONS
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 200,
-            headers,
-            body: ''
-        };
+        return { statusCode: 200, headers, body: '' };
     }
 
+    // Only POST
     if (event.httpMethod !== 'POST') {
         return {
             statusCode: 405,
@@ -33,14 +24,15 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        // Parse body
         const { transaction_amount, description, payer, external_reference } = JSON.parse(event.body);
 
-        // Configurar Mercado Pago
+        // Configure Mercado Pago
         mercadopago.configure({
-            access_token: ACCESS_TOKEN
+            access_token: 'TEST-861897508909678-020211-a341f8eaad70bcc352afa028a9339b8d-136456359'
         });
 
-        // Criar pagamento PIX
+        // Create payment
         const payment = await mercadopago.payment.create({
             transaction_amount: parseFloat(transaction_amount),
             description: description,
@@ -51,7 +43,7 @@ exports.handler = async (event, context) => {
                 last_name: payer.last_name || payer.first_name
             },
             external_reference: external_reference,
-            notification_url: `https://www.borjaoskins.com/.netlify/functions/webhook`
+            notification_url: 'https://www.borjaoskins.com/.netlify/functions/webhook'
         });
 
         return {
@@ -61,14 +53,15 @@ exports.handler = async (event, context) => {
         };
 
     } catch (error) {
-        console.error('Erro ao criar pagamento PIX:', error);
+        console.error('Error:', error);
         
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
-                error: 'Erro ao criar pagamento',
-                message: error.message 
+                error: 'Payment creation failed',
+                message: error.message,
+                details: error.response?.data || null
             })
         };
     }
