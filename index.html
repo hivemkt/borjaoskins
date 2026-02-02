@@ -2,14 +2,13 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Borjão Skins - CS Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rifa de Skins - Borjão Skins</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
         @font-face {
             font-family: 'Kenyan Coffee';
@@ -17,6 +16,7 @@
             font-weight: normal;
             font-style: normal;
         }
+    <style>
         * {
             margin: 0;
             padding: 0;
@@ -36,10 +36,8 @@
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* Animated background */
         .bg-animation {
             position: fixed;
             top: 0;
@@ -61,7 +59,6 @@
                 radial-gradient(circle at 20% 50%, var(--purple-glow) 0%, transparent 50%),
                 radial-gradient(circle at 80% 80%, var(--purple-glow) 0%, transparent 50%);
             animation: bgRotate 20s linear infinite;
-            will-change: transform;
         }
 
         @keyframes bgRotate {
@@ -69,433 +66,1341 @@
             100% { transform: rotate(360deg); }
         }
 
-        @media (max-width: 640px) {
-            .bg-animation::before {
-                animation: bgRotate 30s linear infinite;
-            }
-        }
-
-        .grid-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(rgba(148, 49, 206, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(148, 49, 206, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            z-index: 1;
-            pointer-events: none;
-        }
-
         .container {
             position: relative;
             z-index: 2;
-            max-width: 600px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 40px 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        /* Logo Section */
-        .logo-section {
+        .header {
             text-align: center;
-            margin-bottom: -20px;
-            animation: fadeInDown 1s ease-out;
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            margin-bottom: 40px;
         }
 
         .logo {
-            width: 500px;
-            height: 500px;
-            margin: 0 auto 0px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            animation: float-logo 3s ease-in-out infinite;
-            cursor: pointer;
-        }
-
-        @keyframes float-logo {
-            0%, 100% {
-                transform: translateY(0px);
-            }
-            50% {
-                transform: translateY(-10px);
-            }
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
         }
 
         .logo img {
             width: 100%;
             height: 100%;
             object-fit: contain;
-            position: relative;
-            z-index: 2;
             filter: drop-shadow(0 10px 30px var(--purple-glow));
-            will-change: transform;
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                box-shadow: 
-                    0 0 40px var(--purple-glow),
-                    0 0 80px var(--purple-glow),
-                    inset 0 0 20px rgba(255, 255, 255, 0.1);
-            }
-            50% {
-                box-shadow: 
-                    0 0 60px var(--purple-glow),
-                    0 0 120px var(--purple-glow),
-                    inset 0 0 30px rgba(255, 255, 255, 0.2);
-            }
-        }
-
-        .logo::before {
-            display: none;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .logo::after {
-            display: none;
         }
 
         .title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 32px;
+            font-family: 'Kenyan Coffee', 'Orbitron', sans-serif;
+            font-size: 36px;
             font-weight: 900;
-            text-transform: uppercase;
-            background: linear-gradient(135deg, white, var(--purple), white);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: shimmer 3s linear infinite;
-            letter-spacing: 2px;
+            color: var(--purple);
             margin-bottom: 10px;
         }
 
-        @keyframes shimmer {
-            to {
-                background-position: 200% center;
-            }
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.6);
         }
 
-        .subtitle {
-            font-size: 18px;
-            font-weight: 300;
+        .raffle-card {
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid rgba(148, 49, 206, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+
+        .raffle-image {
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            margin: 0 auto 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 3px solid var(--purple);
+            box-shadow: 0 10px 40px var(--purple-glow);
+        }
+
+        .raffle-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .raffle-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .raffle-title {
+            font-family: 'Kenyan Coffee', 'Orbitron', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .raffle-description {
+            font-size: 16px;
             color: rgba(255, 255, 255, 0.7);
-            letter-spacing: 4px;
+            margin-bottom: 20px;
+        }
+
+        .raffle-stats {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .stat-box {
+            background: rgba(148, 49, 206, 0.1);
+            border: 2px solid var(--purple);
+            border-radius: 10px;
+            padding: 15px 25px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--purple);
+        }
+
+        .promo-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: black;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            display: inline-block;
+            margin-top: 10px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .numbers-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+            gap: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .number-box {
+            aspect-ratio: 1;
+            border: 2px solid rgba(148, 49, 206, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .number-box:hover:not(.sold):not(.reserved) {
+            border-color: var(--purple);
+            background: rgba(148, 49, 206, 0.2);
+            transform: scale(1.1);
+        }
+
+        .number-box.selected {
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            border-color: var(--purple);
+            color: white;
+            box-shadow: 0 0 15px var(--purple-glow);
+        }
+
+        .number-box.sold {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: rgba(255, 0, 0, 0.5);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .number-box.reserved {
+            background: rgba(255, 165, 0, 0.2);
+            border-color: rgba(255, 165, 0, 0.5);
+            color: rgba(255, 255, 255, 0.4);
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+
+        .checkout-section {
+            position: sticky;
+            bottom: 0;
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid var(--purple);
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 -10px 40px var(--purple-glow);
+        }
+
+        .checkout-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .selected-count {
+            font-size: 18px;
+        }
+
+        .total-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--purple);
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
             text-transform: uppercase;
         }
 
-        /* Links Section */
-        .links {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0px;
+        .checkout-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px var(--purple-glow);
         }
 
-        .link-item {
+        .checkout-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Modal PIX Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 3000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid var(--purple);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 600px;
             width: 100%;
             position: relative;
-            animation: fadeInUp 0.8s ease-out backwards;
+            backdrop-filter: blur(10px);
         }
 
-        .link-item:nth-child(1) { animation-delay: 0.2s; }
-        .link-item:nth-child(2) { animation-delay: 0.4s; }
-        .link-item:nth-child(3) { animation-delay: 0.6s; }
-        .link-item:nth-child(4) { animation-delay: 0.8s; }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .link-btn {
-            display: block;
-            width: 100%;
-            text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            will-change: transform;
-        }
-
-        .link-item:nth-child(1) .link-btn {
-            animation: floatSubtle 4s ease-in-out infinite;
-            animation-delay: 0s;
-        }
-
-        .link-item:nth-child(2) .link-btn {
-            animation: floatSubtle 4s ease-in-out infinite;
-            animation-delay: 0.5s;
-        }
-
-        .link-item:nth-child(3) .link-btn {
-            animation: floatSubtle 4s ease-in-out infinite;
-            animation-delay: 1s;
-        }
-
-        .link-item:nth-child(4) .link-btn {
-            animation: floatSubtle 4s ease-in-out infinite;
-            animation-delay: 1.5s;
-        }
-
-        @keyframes floatSubtle {
-            0%, 100% {
-                transform: translateY(0px) scale(1);
-            }
-            50% {
-                transform: translateY(-3px) scale(1.005);
-            }
-        }
-
-        .btn-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 20px;
-            filter: drop-shadow(0 10px 30px var(--purple-glow));
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .link-btn:hover {
-            transform: translateY(-5px) scale(1.02);
-        }
-
-        .link-btn:hover .btn-image {
-            filter: drop-shadow(0 15px 40px var(--purple-glow)) brightness(1.05);
-        }
-
-        .link-btn:active {
-            transform: translateY(-3px) scale(1.01);
-        }
-
-        /* Specific link colors */
-        .link-whatsapp:hover {
-            border-color: #25D366;
-        }
-
-        .link-rifas:hover {
-            border-color: #FFD700;
-        }
-
-        .link-inventario:hover {
-            border-color: #FF6B6B;
-        }
-
-        .link-instagram:hover {
-            border-color: #E1306C;
-        }
-
-        /* Footer */
-        .footer {
-            margin-top: 60px;
-            text-align: center;
-            opacity: 0.5;
-            font-size: 14px;
-            font-weight: 300;
-            letter-spacing: 2px;
-            animation: fadeIn 2s ease-out 1s backwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 0.5; }
-        }
-
-        /* Floating particles */
-        .particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: var(--purple);
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 32px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0;
-            animation: float 8s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
-        @keyframes float {
-            0%, 100% {
-                opacity: 0;
-                transform: translateY(0) translateX(0);
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 0.5;
-            }
-            100% {
-                opacity: 0;
-                transform: translateY(-100vh) translateX(50px);
-            }
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
         }
 
-        @media (max-width: 640px) {
-            .logo {
-                width: 120px;
-                height: 120px;
-                margin: 0 auto 0px;
-            }
+        .modal-title {
+            font-family: 'Kenyan Coffee', sans-serif;
+            font-size: 28px;
+            color: var(--purple);
+            margin-bottom: 20px;
+        }
 
-            .logo img {
-                width: 100%;
-                height: 100%;
-            }
+        #qrCodeContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
 
-            .container {
-                padding: 10px;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-            }
+        #qrCodeContainer img,
+        #qrCodeContainer canvas {
+            max-width: 100%;
+            height: auto;
+        }
 
-            .logo-section {
-                width: 100%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-bottom: -10px;
-            }
+        /* Admin Panel */
+        .admin-trigger {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid var(--purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.3;
+            transition: all 0.3s;
+            z-index: 999;
+            font-size: 24px;
+        }
 
+        .admin-trigger:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .admin-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--purple);
+        }
+
+        .admin-close {
+            background: none;
+            border: 2px solid var(--purple);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .admin-close:hover {
+            background: var(--purple);
+        }
+
+        .admin-section {
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid rgba(148, 49, 206, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .admin-section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(148, 49, 206, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 16px;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px var(--purple-glow);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(148, 49, 206, 0.1);
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .sales-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .sale-item {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(148, 49, 206, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .sale-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .numbers-sold {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .number-badge {
+            background: var(--purple);
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
             .title {
-                font-size: 24px;
+                font-size: 28px;
             }
 
-            .subtitle {
+            .numbers-grid {
+                grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+                gap: 6px;
+            }
+
+            .number-box {
                 font-size: 14px;
-                letter-spacing: 2px;
             }
 
-            .links {
-                flex: 1;
-                justify-content: center;
-                gap: 0px;
-                max-width: 90vw;
-            }
-
-            .link-btn {
-                transform: scale(0.7);
-                margin: -30px 0;
-            }
-
-            .footer {
-                margin-top: 10px;
-                font-size: 11px;
-            }
-        }
-
-            .link-title {
-                font-size: 18px;
-            }
-
-            .link-icon {
-                width: 40px;
-                height: 40px;
-                font-size: 20px;
+            .checkout-info {
+                flex-direction: column;
+                gap: 10px;
             }
         }
     </style>
 </head>
 <body>
     <div class="bg-animation"></div>
-    <div class="grid-overlay"></div>
 
     <div class="container">
-        <div class="logo-section">
-            <div class="logo">
-                <img src="images/logodb.png" alt="Logo Borjão Skins">
-            </div>
+        <div class="header">
+            <a href="linktree-cs.html" style="display: block; width: fit-content; margin: 0 auto;">
+                <div class="logo">
+                    <img src="images/logodb.png" alt="Logo Borjão Skins">
+                </div>
+            </a>
+            <h1 class="title">🎰 RIFA DE SKINS</h1>
         </div>
 
-        <div class="links">
-            <div class="link-item">
-                <a href="vender-skins.html" class="link-btn">
-                    <img src="images/botao1.png" alt="Vender/Upgrade" class="btn-image">
-                </a>
-            </div>
-
-            <div class="link-item">
-                <a href="embreve.html" class="link-btn">
-                    <img src="images/botao2.png" alt="Rifa de Skins" class="btn-image">
-                </a>
-            </div>
-
-            <div class="link-item">
-                <a href="estoque.html" class="link-btn">
-                    <img src="images/botao3.png" alt="Skins em Estoque" class="btn-image">
-                </a>
-            </div>
-
-            <div class="link-item">
-                <a href="https://instagram.com/borjaoskins" class="link-btn" target="_blank">
-                    <img src="images/botao4.png" alt="Instagram" class="btn-image">
-                </a>
-            </div>
+        <div id="loadingMessage" class="loading">
+            Carregando rifa...
         </div>
 
-        <div class="footer">
-            Desenvolvido por hive.mkt
+        <div id="raffleContent" style="display: none;">
+            <div class="raffle-card">
+                <div class="raffle-image">
+                    <img id="raffleImage" src="" alt="Prêmio da Rifa">
+                </div>
+
+                <div class="raffle-info">
+                    <h2 class="raffle-title" id="raffleTitle">-</h2>
+                    <p class="raffle-description" id="raffleDescription">-</p>
+                    
+                    <div class="raffle-stats">
+                        <div class="stat-box">
+                            <div class="stat-label">Valor por Número</div>
+                            <div class="stat-value" id="pricePerNumber">R$ 0,00</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">Números Vendidos</div>
+                            <div class="stat-value"><span id="soldCount">0</span>/100</div>
+                        </div>
+                    </div>
+
+                    <div id="promoSection" style="display: none;">
+                        <div class="promo-badge">
+                            🎉 <span id="promoText"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="numbers-section">
+                    <h3 class="section-title">Escolha seus números da sorte</h3>
+                    <div class="numbers-grid" id="numbersGrid"></div>
+                    
+                    <div class="legend">
+                        <div class="legend-item">
+                            <div class="legend-box" style="background: rgba(255,255,255,0.05); border-color: rgba(148,49,206,0.3);"></div>
+                            <span>Disponível</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box" style="background: linear-gradient(135deg, var(--purple), #6b1fa0); border-color: var(--purple);"></div>
+                            <span>Selecionado</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-box" style="background: rgba(255,0,0,0.2); border-color: rgba(255,0,0,0.5);"></div>
+                            <span>Vendido</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="checkout-section">
+                <div class="checkout-info">
+                    <div class="selected-count">
+                        Números selecionados: <strong id="selectedCount">0</strong>
+                    </div>
+                    <div class="total-price" id="totalPrice">R$ 0,00</div>
+                </div>
+                <button class="checkout-btn" id="checkoutBtn" disabled onclick="initCheckout()">
+                    Finalizar Compra via PIX
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Trigger -->
+    <div class="admin-trigger" onclick="openAdminPanel()">⚙️</div>
+
+    <!-- Modal de Pagamento PIX -->
+    <div class="modal" id="pixModal" style="display: none;">
+        <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <button class="modal-close" onclick="closePixModal()">×</button>
+            <h2 class="modal-title">💳 Pagamento PIX</h2>
+            
+            <div id="pixLoading" style="padding: 40px;">
+                <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
+                <p>Gerando QR Code PIX...</p>
+            </div>
+
+            <div id="pixContent" style="display: none;">
+                <div style="background: white; padding: 20px; border-radius: 15px; margin: 20px 0;">
+                    <div id="qrCodeContainer"></div>
+                </div>
+                
+                <div style="background: rgba(148, 49, 206, 0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                    <p style="margin-bottom: 10px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                        Ou copie o código PIX:
+                    </p>
+                    <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; word-break: break-all; font-size: 12px; margin-bottom: 10px;" id="pixCode"></div>
+                    <button onclick="copyPixCode()" style="background: #00ff88; color: black; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700;">
+                        📋 Copiar Código
+                    </button>
+                </div>
+
+                <div style="background: rgba(0, 255, 136, 0.1); border: 2px solid #00ff88; border-radius: 15px; padding: 20px; margin-top: 20px;">
+                    <p style="color: #00ff88; font-weight: 700; margin-bottom: 10px;">
+                        ⏱️ Aguardando pagamento...
+                    </p>
+                    <p style="font-size: 14px; color: rgba(255,255,255,0.7);">
+                        Seus números estão reservados por 15 minutos.<br>
+                        Assim que o pagamento for confirmado, você receberá seus números!
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1 class="admin-title">🎮 PAINEL ADMINISTRATIVO</h1>
+                <button class="admin-close" onclick="closeAdminPanel()">Fechar</button>
+            </div>
+
+            <!-- Configurações da Rifa -->
+            <div class="admin-section">
+                <h2 class="admin-section-title">⚙️ Configurar Rifa</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Título do Prêmio</label>
+                    <input type="text" class="form-input" id="adminTitle" placeholder="Ex: AK-47 | Redline (Field-Tested)">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Descrição</label>
+                    <textarea class="form-textarea" id="adminDescription" placeholder="Descreva o prêmio da rifa..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL da Imagem</label>
+                    <input type="url" class="form-input" id="adminImage" placeholder="https://exemplo.com/imagem.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Valor por Número (R$)</label>
+                    <input type="number" class="form-input" id="adminPrice" placeholder="5.00" step="0.01" min="0.01">
+                </div>
+
+                <div class="form-group">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="adminPromoEnabled">
+                        <label class="form-label" style="margin: 0;">Ativar Promoção</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="promoFields" style="display: none;">
+                    <label class="form-label">Desconto (%)</label>
+                    <input type="number" class="form-input" id="adminPromoDiscount" placeholder="10" min="1" max="50">
+                    
+                    <label class="form-label" style="margin-top: 10px;">Mínimo de Números para Promoção</label>
+                    <input type="number" class="form-input" id="adminPromoMinNumbers" placeholder="10" min="2" max="50">
+                </div>
+
+                <button class="btn-primary" onclick="saveRaffleConfig()">💾 Salvar Configurações</button>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="admin-section">
+                <h2 class="admin-section-title">📊 Estatísticas</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Vendido</div>
+                        <div class="stat-value" id="adminTotalSold">R$ 0,00</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Números Vendidos</div>
+                        <div class="stat-value" id="adminNumbersSold">0/100</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total de Compradores</div>
+                        <div class="stat-value" id="adminBuyersCount">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Vendas -->
+            <div class="admin-section">
+                <h2 class="admin-section-title">🛒 Vendas Realizadas</h2>
+                <div class="sales-list" id="salesList">
+                    <p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda ainda</p>
+                </div>
+            </div>
+
+            <!-- Realizar Sorteio -->
+            <div class="admin-section">
+                <h2 class="admin-section-title">🎲 Realizar Sorteio</h2>
+                <p style="margin-bottom: 20px;">Clique no botão abaixo para sortear um número vencedor entre os números vendidos.</p>
+                <button class="btn-primary" onclick="drawWinner()">🎲 Sortear Vencedor</button>
+                <div id="winnerResult" style="margin-top: 20px; padding: 20px; background: rgba(0,255,136,0.1); border: 2px solid #00ff88; border-radius: 10px; display: none;">
+                    <h3 style="color: #00ff88; margin-bottom: 10px;">🏆 VENCEDOR!</h3>
+                    <p id="winnerText"></p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // Create floating particles
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * window.innerWidth + 'px';
-            particle.style.animationDelay = Math.random() * 8 + 's';
-            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
-            document.body.appendChild(particle);
+        // ==========================================
+        // 🔐 CONFIGURAÇÃO DO SUPABASE E MERCADO PAGO
+        // ==========================================
+        const SUPABASE_URL = 'https://yyoyxanloloupwoczkhr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM';
+        
+        // MERCADO PAGO - Cole sua Public Key aqui
+        const MERCADOPAGO_PUBLIC_KEY = 'SUA_PUBLIC_KEY_AQUI';
+        
+        // CONFIGURAÇÃO DE SENHA DO ADMIN:
+        const ADMIN_PASSWORD = 'borjao777';
+        // ==========================================
 
-            setTimeout(() => {
-                particle.remove();
-            }, 10000);
+        // Inicializar Supabase
+        let supabaseClient = null;
+        
+        try {
+            console.log('🔄 Tentando conectar ao Supabase...');
+            console.log('URL:', SUPABASE_URL);
+            console.log('Key presente:', SUPABASE_KEY ? 'Sim' : 'Não');
+            
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+            console.log('✅ Supabase Client criado:', supabaseClient);
+        } catch (error) {
+            console.error('❌ Erro ao conectar com Supabase:', error);
         }
 
-        // Generate particles periodically (less on mobile)
-        const isMobile = window.innerWidth <= 640;
-        const particleInterval = isMobile ? 2000 : 500;
-        setInterval(createParticle, particleInterval);
+        let currentRaffle = null;
+        let selectedNumbers = new Set();
+        let soldNumbers = new Set();
 
-        // Add hover sound effect simulation (visual feedback)
-        document.querySelectorAll('.link-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        // Inicializar
+        async function init() {
+            // Verificar se Supabase está configurado
+            if (!supabaseClient) {
+                document.getElementById('loadingMessage').textContent = '❌ Erro: Supabase não configurado corretamente.';
+                return;
+            }
+
+            await loadRaffle();
+            
+            if (currentRaffle) {
+                await loadSoldNumbers();
+                renderNumbers();
+                updateCheckout();
+            }
+        }
+
+        // Carregar dados da rifa
+        async function loadRaffle() {
+            try {
+                console.log('🔄 Carregando rifas...');
+                console.log('Supabase Client disponível:', !!supabaseClient);
+                
+                const { data, error } = await supabaseClient
+                    .from('raffles')
+                    .select('*')
+                    .eq('active', true)
+                    .single();
+
+                console.log('📦 Resposta do Supabase:');
+                console.log('Data:', data);
+                console.log('Error:', error);
+
+                if (error) {
+                    console.error('❌ Erro Supabase:', error);
+                    throw error;
+                }
+
+                if (!data) {
+                    throw new Error('Nenhuma rifa ativa encontrada');
+                }
+
+                currentRaffle = data;
+                console.log('✅ Rifa carregada:', currentRaffle);
+                displayRaffle();
+            } catch (error) {
+                console.error('❌ Erro ao carregar rifa:', error);
+                document.getElementById('loadingMessage').innerHTML = `
+                    <div style="color: #ff4444;">❌ Erro ao carregar rifa</div>
+                    <div style="font-size: 14px; margin-top: 10px; color: rgba(255,255,255,0.6);">
+                        Verifique o console do navegador (F12) para mais detalhes.<br>
+                        Erro: ${error.message || error.toString()}
+                    </div>
+                `;
+            }
+        }
+
+        // Exibir dados da rifa
+        function displayRaffle() {
+            if (!currentRaffle) return;
+
+            document.getElementById('raffleImage').src = currentRaffle.image_url;
+            document.getElementById('raffleTitle').textContent = currentRaffle.title;
+            document.getElementById('raffleDescription').textContent = currentRaffle.description;
+            document.getElementById('pricePerNumber').textContent = `R$ ${currentRaffle.price_per_number.toFixed(2)}`;
+
+            if (currentRaffle.promo_enabled) {
+                document.getElementById('promoSection').style.display = 'block';
+                document.getElementById('promoText').textContent = 
+                    `${currentRaffle.promo_discount}% OFF comprando ${currentRaffle.promo_min_numbers}+ números!`;
+            }
+
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('raffleContent').style.display = 'block';
+        }
+
+        // Carregar números vendidos
+        async function loadSoldNumbers() {
+            if (!currentRaffle || !currentRaffle.id) {
+                console.error('Rifa não carregada');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from('raffle_sales')
+                    .select('numbers')
+                    .eq('raffle_id', currentRaffle.id)
+                    .eq('payment_status', 'approved');
+
+                if (error) throw error;
+
+                soldNumbers.clear();
+                if (data && data.length > 0) {
+                    data.forEach(sale => {
+                        if (sale.numbers && Array.isArray(sale.numbers)) {
+                            sale.numbers.forEach(num => soldNumbers.add(num));
+                        }
+                    });
+                }
+
+                document.getElementById('soldCount').textContent = soldNumbers.size;
+            } catch (error) {
+                console.error('Erro ao carregar números vendidos:', error);
+            }
+        }
+
+        // Renderizar grid de números
+        function renderNumbers() {
+            const grid = document.getElementById('numbersGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 100; i++) {
+                const box = document.createElement('div');
+                box.className = 'number-box';
+                box.textContent = i;
+                box.dataset.number = i;
+
+                if (soldNumbers.has(i)) {
+                    box.classList.add('sold');
+                } else {
+                    box.addEventListener('click', () => toggleNumber(i));
+                }
+
+                grid.appendChild(box);
+            }
+        }
+
+        // Selecionar/Desselecionar número
+        function toggleNumber(number) {
+            if (selectedNumbers.has(number)) {
+                selectedNumbers.delete(number);
+            } else {
+                selectedNumbers.add(number);
+            }
+
+            updateNumbersDisplay();
+            updateCheckout();
+        }
+
+        // Atualizar display dos números
+        function updateNumbersDisplay() {
+            document.querySelectorAll('.number-box').forEach(box => {
+                const num = parseInt(box.dataset.number);
+                if (selectedNumbers.has(num)) {
+                    box.classList.add('selected');
+                } else {
+                    box.classList.remove('selected');
+                }
             });
-        });
+        }
+
+        // Atualizar checkout
+        function updateCheckout() {
+            if (!currentRaffle) return;
+
+            const count = selectedNumbers.size;
+            document.getElementById('selectedCount').textContent = count;
+
+            let total = count * currentRaffle.price_per_number;
+
+            // Aplicar promoção se aplicável
+            if (currentRaffle.promo_enabled && count >= currentRaffle.promo_min_numbers) {
+                total = total * (1 - currentRaffle.promo_discount / 100);
+            }
+
+            document.getElementById('totalPrice').textContent = `R$ ${total.toFixed(2)}`;
+            document.getElementById('checkoutBtn').disabled = count === 0;
+        }
+
+        // Iniciar checkout
+        async function initCheckout() {
+            if (selectedNumbers.size === 0) return;
+
+            const name = prompt('Digite seu nome completo:');
+            if (!name || name.trim() === '') return;
+
+            const phone = prompt('Digite seu WhatsApp (com DDD):');
+            if (!phone || phone.trim() === '') return;
+
+            try {
+                const totalAmount = parseFloat(document.getElementById('totalPrice').textContent.replace('R$ ', '').replace('.', '').replace(',', '.'));
+                const numbersArray = Array.from(selectedNumbers);
+
+                // Salvar venda como pendente (reservado)
+                const { data: saleData, error: saleError } = await supabaseClient
+                    .from('raffle_sales')
+                    .insert({
+                        raffle_id: currentRaffle.id,
+                        buyer_name: name.trim(),
+                        buyer_phone: phone.trim(),
+                        numbers: numbersArray,
+                        total_amount: totalAmount,
+                        payment_status: 'reserved',
+                        created_at: new Date().toISOString()
+                    })
+                    .select()
+                    .single();
+
+                if (saleError) throw saleError;
+
+                // Gerar pagamento PIX com Mercado Pago
+                await generatePixPayment(saleData, totalAmount, numbersArray);
+
+            } catch (error) {
+                console.error('Erro ao processar compra:', error);
+                alert('❌ Erro ao processar compra: ' + (error.message || 'Tente novamente.'));
+            }
+        }
+
+        // Gerar pagamento PIX com Mercado Pago
+        async function generatePixPayment(saleData, amount, numbers) {
+            try {
+                // Mostrar modal de loading
+                document.getElementById('pixModal').style.display = 'flex';
+                document.getElementById('pixModal').classList.add('active');
+                document.getElementById('pixLoading').style.display = 'block';
+                document.getElementById('pixContent').style.display = 'none';
+
+                // Aqui você precisa fazer uma chamada para seu backend
+                // que vai usar a SDK do Mercado Pago server-side
+                // Por enquanto, vou mostrar como seria a estrutura:
+
+                const paymentData = {
+                    transaction_amount: amount,
+                    description: `Rifa ${currentRaffle.title} - Números: ${numbers.join(', ')}`,
+                    payment_method_id: 'pix',
+                    payer: {
+                        email: 'cliente@email.com', // Você pode pedir o email também
+                        first_name: saleData.buyer_name.split(' ')[0],
+                        last_name: saleData.buyer_name.split(' ').slice(1).join(' ') || saleData.buyer_name
+                    },
+                    notification_url: 'https://seu-site.com/webhook', // Seu webhook para receber notificações
+                    external_reference: saleData.id
+                };
+
+                // IMPORTANTE: Esta chamada deve ser feita pelo seu backend!
+                // Aqui está apenas a estrutura de exemplo
+                const response = await fetch('SEU_BACKEND_URL/create-pix-payment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(paymentData)
+                });
+
+                const pixData = await response.json();
+
+                if (pixData.point_of_interaction && pixData.point_of_interaction.transaction_data) {
+                    const qrCode = pixData.point_of_interaction.transaction_data.qr_code_base64;
+                    const pixCodeString = pixData.point_of_interaction.transaction_data.qr_code;
+
+                    // Atualizar venda com payment_id
+                    await supabaseClient
+                        .from('raffle_sales')
+                        .update({ payment_id: pixData.id })
+                        .eq('id', saleData.id);
+
+                    // Mostrar QR Code
+                    displayPixQRCode(qrCode, pixCodeString, pixData.id, saleData.id);
+
+                    // Iniciar verificação de pagamento
+                    startPaymentCheck(pixData.id, saleData.id);
+                } else {
+                    throw new Error('Erro ao gerar PIX');
+                }
+
+            } catch (error) {
+                console.error('Erro ao gerar PIX:', error);
+                document.getElementById('pixModal').classList.remove('active');
+                alert('❌ Erro ao gerar pagamento PIX. Por favor, tente novamente.');
+            }
+        }
+
+        // Exibir QR Code PIX
+        function displayPixQRCode(qrCodeBase64, pixCodeString, paymentId, saleId) {
+            document.getElementById('pixLoading').style.display = 'none';
+            document.getElementById('pixContent').style.display = 'block';
+
+            // Exibir QR Code
+            const qrContainer = document.getElementById('qrCodeContainer');
+            qrContainer.innerHTML = `<img src="data:image/png;base64,${qrCodeBase64}" alt="QR Code PIX" style="max-width: 300px;">`;
+
+            // Exibir código PIX
+            document.getElementById('pixCode').textContent = pixCodeString;
+
+            // Salvar para função de copiar
+            window.currentPixCode = pixCodeString;
+        }
+
+        // Copiar código PIX
+        function copyPixCode() {
+            if (window.currentPixCode) {
+                navigator.clipboard.writeText(window.currentPixCode).then(() => {
+                    alert('✅ Código PIX copiado!');
+                }).catch(() => {
+                    // Fallback para navegadores antigos
+                    const textarea = document.createElement('textarea');
+                    textarea.value = window.currentPixCode;
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('✅ Código PIX copiado!');
+                });
+            }
+        }
+
+        // Fechar modal PIX
+        function closePixModal() {
+            document.getElementById('pixModal').classList.remove('active');
+            document.getElementById('pixModal').style.display = 'none';
+            if (window.paymentCheckInterval) {
+                clearInterval(window.paymentCheckInterval);
+            }
+            // Recarregar para atualizar números
+            location.reload();
+        }
+
+        // Verificar status do pagamento
+        async function startPaymentCheck(paymentId, saleId) {
+            let attempts = 0;
+            const maxAttempts = 60; // 15 minutos (60 * 15s)
+
+            window.paymentCheckInterval = setInterval(async () => {
+                attempts++;
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(window.paymentCheckInterval);
+                    alert('⏱️ Tempo expirado. Se você já pagou, seus números serão liberados automaticamente.');
+                    closePixModal();
+                    return;
+                }
+
+                try {
+                    // Verificar status no Supabase
+                    const { data, error } = await supabaseClient
+                        .from('raffle_sales')
+                        .select('payment_status')
+                        .eq('id', saleId)
+                        .single();
+
+                    if (data && data.payment_status === 'approved') {
+                        clearInterval(window.paymentCheckInterval);
+                        
+                        // Mostrar sucesso
+                        alert('🎉 Pagamento confirmado! Seus números foram reservados com sucesso!');
+                        closePixModal();
+                        
+                        // Recarregar página para mostrar números vendidos
+                        location.reload();
+                    }
+                } catch (error) {
+                    console.error('Erro ao verificar pagamento:', error);
+                }
+            }, 15000); // Verificar a cada 15 segundos
+        }
+
+        // Simular pagamento (REMOVER EM PRODUÇÃO - apenas para testes)
+        function simulatePayment(saleId) {
+            alert('🔄 Sistema de pagamento em desenvolvimento.\n\nEm produção, aqui geraria o QR Code PIX do Mercado Pago.');
+            selectedNumbers.clear();
+            updateNumbersDisplay();
+            updateCheckout();
+        }
+
+        // ADMIN FUNCTIONS
+
+        function openAdminPanel() {
+            const password = prompt('🔐 Digite a senha do administrador:');
+            if (password !== ADMIN_PASSWORD) {
+                alert('❌ Senha incorreta!');
+                return;
+            }
+
+            document.getElementById('adminPanel').classList.add('active');
+            loadAdminData();
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.remove('active');
+        }
+
+        async function loadAdminData() {
+            if (!currentRaffle) return;
+
+            // Carregar configurações
+            document.getElementById('adminTitle').value = currentRaffle.title || '';
+            document.getElementById('adminDescription').value = currentRaffle.description || '';
+            document.getElementById('adminImage').value = currentRaffle.image_url || '';
+            document.getElementById('adminPrice').value = currentRaffle.price_per_number || '';
+            document.getElementById('adminPromoEnabled').checked = currentRaffle.promo_enabled || false;
+            document.getElementById('adminPromoDiscount').value = currentRaffle.promo_discount || '';
+            document.getElementById('adminPromoMinNumbers').value = currentRaffle.promo_min_numbers || '';
+
+            togglePromoFields();
+
+            // Carregar vendas
+            await loadSales();
+            updateAdminStats();
+        }
+
+        function togglePromoFields() {
+            const enabled = document.getElementById('adminPromoEnabled').checked;
+            document.getElementById('promoFields').style.display = enabled ? 'block' : 'none';
+        }
+
+        document.getElementById('adminPromoEnabled').addEventListener('change', togglePromoFields);
+
+        async function saveRaffleConfig() {
+            if (!currentRaffle || !currentRaffle.id) {
+                alert('❌ Erro: Nenhuma rifa carregada para editar.');
+                return;
+            }
+
+            try {
+                const updates = {
+                    title: document.getElementById('adminTitle').value,
+                    description: document.getElementById('adminDescription').value,
+                    image_url: document.getElementById('adminImage').value,
+                    price_per_number: parseFloat(document.getElementById('adminPrice').value),
+                    promo_enabled: document.getElementById('adminPromoEnabled').checked,
+                    promo_discount: parseInt(document.getElementById('adminPromoDiscount').value) || 0,
+                    promo_min_numbers: parseInt(document.getElementById('adminPromoMinNumbers').value) || 0
+                };
+
+                const { error } = await supabaseClient
+                    .from('raffles')
+                    .update(updates)
+                    .eq('id', currentRaffle.id);
+
+                if (error) throw error;
+
+                alert('✅ Configurações salvas com sucesso!');
+                location.reload();
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                alert('❌ Erro ao salvar configurações: ' + error.message);
+            }
+        }
+
+        async function loadSales() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('raffle_sales')
+                    .select('*')
+                    .eq('raffle_id', currentRaffle.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                const salesList = document.getElementById('salesList');
+                
+                if (data.length === 0) {
+                    salesList.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
+                    return;
+                }
+
+                salesList.innerHTML = data.map(sale => `
+                    <div class="sale-item">
+                        <div class="sale-header">
+                            <span>${sale.buyer_name}</span>
+                            <span>${sale.payment_status === 'approved' ? '✅ Pago' : '⏳ Pendente'}</span>
+                        </div>
+                        <div>📱 ${sale.buyer_phone}</div>
+                        <div>💰 R$ ${sale.total_amount.toFixed(2)}</div>
+                        <div class="numbers-sold">
+                            ${sale.numbers.map(n => `<span class="number-badge">${n}</span>`).join('')}
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Erro ao carregar vendas:', error);
+            }
+        }
+
+        function updateAdminStats() {
+            // Calcular estatísticas
+            const approvedSales = Array.from(document.querySelectorAll('.sale-item'))
+                .filter(item => item.textContent.includes('✅ Pago'));
+
+            const totalSold = approvedSales.reduce((sum, item) => {
+                const amount = parseFloat(item.querySelector('div:nth-child(3)').textContent.replace('💰 R$ ', ''));
+                return sum + amount;
+            }, 0);
+
+            document.getElementById('adminTotalSold').textContent = `R$ ${totalSold.toFixed(2)}`;
+            document.getElementById('adminNumbersSold').textContent = `${soldNumbers.size}/100`;
+            document.getElementById('adminBuyersCount').textContent = approvedSales.length;
+        }
+
+        async function drawWinner() {
+            if (soldNumbers.size === 0) {
+                alert('❌ Nenhum número foi vendido ainda!');
+                return;
+            }
+
+            const numbersArray = Array.from(soldNumbers);
+            const winnerNumber = numbersArray[Math.floor(Math.random() * numbersArray.length)];
+
+            // Buscar comprador
+            const { data, error } = await supabaseClient
+                .from('raffle_sales')
+                .select('*')
+                .eq('raffle_id', currentRaffle.id)
+                .eq('payment_status', 'approved');
+
+            if (error) {
+                console.error('Erro:', error);
+                return;
+            }
+
+            const winner = data.find(sale => sale.numbers.includes(winnerNumber));
+
+            document.getElementById('winnerResult').style.display = 'block';
+            document.getElementById('winnerText').innerHTML = `
+                <strong>Número sorteado:</strong> ${winnerNumber}<br>
+                <strong>Vencedor:</strong> ${winner.buyer_name}<br>
+                <strong>WhatsApp:</strong> ${winner.buyer_phone}
+            `;
+        }
+
+        // Inicializar ao carregar
+        init();
     </script>
 </body>
 </html>
