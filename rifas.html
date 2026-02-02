@@ -1158,70 +1158,71 @@
             }
         }
 
-        // Gerar pagamento PIX com Mercado Pago
-        async function generatePixPayment(saleData, amount, numbers) {
-            try {
-                console.log('💳 Gerando PIX...');
-                console.log('💵 Amount recebido:', amount, 'Tipo:', typeof amount);
-                
-                // Mostrar modal de loading
-                document.getElementById('pixModal').style.display = 'flex';
-                document.getElementById('pixModal').classList.add('active');
-                document.getElementById('pixLoading').style.display = 'block';
-                document.getElementById('pixContent').style.display = 'none';
+        // Gerar pagamento PIX com Mercado Pago (via Netlify Function)
+async function generatePixPayment(saleData, amount, numbers) {
+    try {
+        console.log('💳 Gerando PIX...');
+        console.log('💵 Amount recebido:', amount, 'Tipo:', typeof amount);
 
-                const paymentData = {
-                    transaction_amount: amount,
-                    description: `Rifa ${currentRaffle.title} - Números: ${numbers.join(', ')}`,
-                    payment_method_id: 'pix',
-                    payer: {
-                        email: CLIENT_EMAIL,
-                        first_name: saleData.buyer_name.split(' ')[0],
-                        last_name: saleData.buyer_name.split(' ').slice(1).join(' ') || saleData.buyer_name
-                    },
-                    notification_url: window.location.origin + '/.netlify/functions/webhook',
-                    external_reference: saleData.id
-                };
-                
-                console.log('📤 Enviando para MP:', paymentData);
-                };
+        // Mostrar modal de loading
+        document.getElementById('pixModal').style.display = 'flex';
+        document.getElementById('pixModal').classList.add('active');
+        document.getElementById('pixLoading').style.display = 'block';
+        document.getElementById('pixContent').style.display = 'none';
 
-                // Chamar Netlify Function para criar pagamento PIX REAL
-                const response = await fetch('/.netlify/functions/create-pix', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(paymentData)
-                });
+        const paymentData = {
+            transaction_amount: amount,
+            description: `Rifa ${currentRaffle.title} - Números: ${numbers.join(', ')}`,
+            payer: {
+                email: CLIENT_EMAIL,
+                first_name: saleData.buyer_name.split(' ')[0],
+                last_name: saleData.buyer_name.split(' ').slice(1).join(' ') || saleData.buyer_name
+            },
+            external_reference: saleData.id
+        };
 
-                const pixData = await response.json();
+        console.log('📤 Enviando para Netlify Function:', paymentData);
 
-                if (pixData.point_of_interaction && pixData.point_of_interaction.transaction_data) {
-                    const qrCode = pixData.point_of_interaction.transaction_data.qr_code_base64;
-                    const pixCodeString = pixData.point_of_interaction.transaction_data.qr_code;
+        // 🔥 CHAMADA CORRETA PARA A FUNCTION
+        const response = await fetch('/.netlify/functions/create-pix', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentData)
+        });
 
-                    // Atualizar venda com payment_id
-                    await supabaseClient
-                        .from('raffle_sales')
-                        .update({ payment_id: pixData.id })
-                        .eq('id', saleData.id);
+        const pixData = await response.json();
+        console.log('📥 Resposta PIX:', pixData);
 
-                    // Mostrar QR Code
-                    displayPixQRCode(qrCode, pixCodeString, pixData.id, saleData.id);
-
-                    // Iniciar verificação de pagamento
-                    startPaymentCheck(pixData.id, saleData.id);
-                } else {
-                    throw new Error('Erro ao gerar PIX');
-                }
-
-            } catch (error) {
-                console.error('Erro ao gerar PIX:', error);
-                document.getElementById('pixModal').classList.remove('active');
-                alert('❌ Erro ao gerar pagamento PIX. Por favor, tente novamente.');
-            }
+        if (!pixData.qr_code_base64 || !pixData.qr_code) {
+            throw new Error('Resposta PIX inválida');
         }
+
+        // Atualizar venda com payment_id
+        await supabaseClient
+            .from('raffle_sales')
+            .update({ payment_id: pixData.id })
+            .eq('id', saleData.id);
+
+        // Mostrar QR Code
+        displayPixQRCode(
+            pixData.qr_code_base64,
+            pixData.qr_code,
+            pixData.id,
+            saleData.id
+        );
+
+        // (opcional depois) iniciar verificação de pagamento
+        // startPaymentCheck(pixData.id, saleData.id);
+
+    } catch (error) {
+        console.error('❌ Erro ao gerar PIX:', error);
+        document.getElementById('pixModal').classList.remove('active');
+        alert('❌ Erro ao gerar pagamento PIX. Tente novamente.');
+    }
+}
+
 
         // Exibir QR Code PIX
         function displayPixQRCode(qrCodeBase64, pixCodeString, paymentId, saleId) {
