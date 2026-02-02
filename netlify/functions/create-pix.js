@@ -30,9 +30,9 @@ exports.handler = async (event) => {
         // Parse body
         const { transaction_amount, description, payer, external_reference } = JSON.parse(event.body);
 
-        // Configure Mercado Pago Client (SDK v2 syntax)
+        // Configure Mercado Pago Client - PRODUÇÃO
         const client = new MercadoPagoConfig({ 
-            accessToken: 'TEST-861897508909678-020211-a341f8eaad70bcc352afa028a9339b8d-136456359'
+            accessToken: 'APP_USR-861897508909678-020211-124d4fa380e582c73f57be0350a9945a-136456359'
         });
         
         const payment = new Payment(client);
