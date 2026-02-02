@@ -1212,6 +1212,7 @@ async function generatePixPayment(saleData, amount, numbers) {
             pixData.id,
             saleData.id
         );
+            startPaymentCheck(pixData.id, saleData.id);
 
         // (opcional depois) iniciar verificação de pagamento
         // startPaymentCheck(pixData.id, saleData.id);
@@ -1259,15 +1260,20 @@ async function generatePixPayment(saleData, amount, numbers) {
         }
 
         // Fechar modal PIX
-        function closePixModal() {
-            document.getElementById('pixModal').classList.remove('active');
-            document.getElementById('pixModal').style.display = 'none';
-            if (window.paymentCheckInterval) {
-                clearInterval(window.paymentCheckInterval);
-            }
-            // Recarregar para atualizar números
-            location.reload();
-        }
+       function closePixModal(reload = true) {
+    document.getElementById('pixModal').classList.remove('active');
+    document.getElementById('pixModal').style.display = 'none';
+
+    if (window.paymentCheckInterval) {
+        clearInterval(window.paymentCheckInterval);
+        window.paymentCheckInterval = null;
+    }
+
+    if (reload) {
+        location.reload();
+    }
+}
+
 
         // Verificar status do pagamento
         async function startPaymentCheck(paymentId, saleId) {
@@ -1292,21 +1298,21 @@ async function generatePixPayment(saleData, amount, numbers) {
                         .eq('id', saleId)
                         .single();
 
-                    if (data && data.payment_status === 'approved') {
-                        clearInterval(window.paymentCheckInterval);
-                        
-                        // Mostrar sucesso
-                        alert('🎉 Pagamento confirmado! Seus números foram reservados com sucesso!');
-                        closePixModal();
-                        
-                        // Recarregar página para mostrar números vendidos
-                        location.reload();
-                    }
-                } catch (error) {
-                    console.error('Erro ao verificar pagamento:', error);
-                }
-            }, 15000); // Verificar a cada 15 segundos
-        }
+                    if (data?.payment_status === 'approved') {
+    clearInterval(window.paymentCheckInterval);
+
+    // some QR
+    document.getElementById('pixContent').style.display = 'none';
+    document.getElementById('pixLoading').style.display = 'none';
+
+    // mostra mini popup obrigado
+    document.getElementById('thankYouMini').style.display = 'block';
+
+    // fecha modal depois de 3s SEM reload imediato
+    setTimeout(() => {
+        closePixModal(true); // agora sim recarrega
+    }, 3000);
+}
 
         // Simular pagamento (REMOVER EM PRODUÇÃO - apenas para testes)
         function simulatePayment(saleId) {
