@@ -6,7 +6,7 @@
     <title>Rifa de Skins - Borjão Skins</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://sdk.mercadopago.com/js/v2"></script>
     <style>
@@ -15,6 +15,14 @@
             src: url('fonts/KENYAN_COFFEE_RG.TTF') format('truetype');
             font-weight: normal;
             font-style: normal;
+            font-display: swap;
+        }
+        
+        /* Fallback se a fonte não carregar */
+        @supports not (font-display: swap) {
+            .title, .admin-title, .modal-title {
+                font-family: 'Bebas Neue', 'Orbitron', sans-serif !important;
+            }
         }
     <style>
         * {
@@ -637,6 +645,31 @@
             transform: translateY(0);
         }
 
+        .btn-approve-manual {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background: #00ff88;
+            border: none;
+            border-radius: 8px;
+            color: black;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-approve-manual:hover {
+            background: #00dd77;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-approve-manual:active {
+            transform: translateY(0);
+        }
+
         @media (max-width: 768px) {
             .title {
                 font-size: 28px;
@@ -1139,7 +1172,44 @@
                     external_reference: saleData.id
                 };
 
-                // Chamar Netlify Function para criar pagamento PIX
+                // ⚠️ SOLUÇÃO TEMPORÁRIA - Até as Netlify Functions funcionarem
+                // Comentar este bloco quando as functions estiverem OK
+                
+                console.log('⚠️ MODO SIMULAÇÃO - Functions não disponíveis');
+                
+                // Simular resposta do Mercado Pago
+                const mockPixData = {
+                    id: 'MOCK-' + Date.now(),
+                    status: 'pending',
+                    point_of_interaction: {
+                        transaction_data: {
+                            qr_code_base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+                            qr_code: '00020126580014br.gov.bcb.pix0136' + saleData.id + '520400005303986540' + amount.toFixed(2) + '5802BR5913BORJAO SKINS6009SAO PAULO'
+                        }
+                    }
+                };
+                
+                // Atualizar venda com payment_id
+                await supabaseClient
+                    .from('raffle_sales')
+                    .update({ payment_id: mockPixData.id })
+                    .eq('id', saleData.id);
+                
+                // Mostrar QR Code simulado
+                displayPixQRCode(mockPixData.point_of_interaction.transaction_data.qr_code_base64, mockPixData.point_of_interaction.transaction_data.qr_code, mockPixData.id, saleData.id);
+                
+                // Mostrar aviso
+                alert('⚠️ MODO TESTE - SIMULAÇÃO\n\nAs Netlify Functions ainda não estão ativas.\n\nPara aprovar: Vá no painel admin e aprove manualmente.');
+                
+                // Não iniciar verificação automática em modo simulação
+                // startPaymentCheck(mockPixData.id, saleData.id);
+                
+                return; // Parar aqui em modo simulação
+                
+                // ⚠️ FIM DA SOLUÇÃO TEMPORÁRIA
+                
+                // Chamar Netlify Function para criar pagamento PIX (DESCOMENTAR quando funcionar)
+                /*
                 const response = await fetch('/.netlify/functions/create-pix', {
                     method: 'POST',
                     headers: {
@@ -1168,6 +1238,7 @@
                 } else {
                     throw new Error('Erro ao gerar PIX');
                 }
+                */
 
             } catch (error) {
                 console.error('Erro ao gerar PIX:', error);
@@ -1372,9 +1443,14 @@
                             ${sale.numbers.map(n => `<span class="number-badge">${n}</span>`).join('')}
                         </div>
                         ${sale.payment_status !== 'approved' ? `
-                            <button class="btn-remove-pending" onclick="removePendingSale('${sale.id}')">
-                                🗑️ Remover Pendente
-                            </button>
+                            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                <button class="btn-approve-manual" onclick="approveSaleManually('${sale.id}')" style="flex: 1;">
+                                    ✅ Aprovar Pagamento
+                                </button>
+                                <button class="btn-remove-pending" onclick="removePendingSale('${sale.id}')" style="flex: 1;">
+                                    🗑️ Remover
+                                </button>
+                            </div>
                         ` : ''}
                     </div>
                 `).join('');
@@ -1398,6 +1474,33 @@
             document.getElementById('adminBuyersCount').textContent = approvedSales.length;
         }
 
+        // Aprovar venda manualmente (modo simulação)
+        async function approveSaleManually(saleId) {
+            if (!confirm('✅ Aprovar este pagamento manualmente?\n\nOs números serão liberados para o cliente.')) {
+                return;
+            }
+
+            try {
+                // Atualizar status para approved
+                const { error } = await supabaseClient
+                    .from('raffle_sales')
+                    .update({ payment_status: 'approved' })
+                    .eq('id', saleId);
+
+                if (error) throw error;
+
+                alert('✅ Pagamento aprovado com sucesso!\n\nOs números foram liberados para o cliente.');
+                
+                // Recarregar lista de vendas
+                await loadSales();
+                updateAdminStats();
+
+            } catch (error) {
+                console.error('Erro ao aprovar venda:', error);
+                alert('❌ Erro ao aprovar: ' + (error.message || 'Tente novamente.'));
+            }
+        }
+
         // Remover venda pendente
         async function removePendingSale(saleId) {
             if (!confirm('⚠️ Tem certeza que deseja remover esta venda pendente?\n\nOs números serão liberados novamente.')) {
@@ -1416,7 +1519,7 @@
                 alert('✅ Venda pendente removida com sucesso!\n\nOs números foram liberados.');
                 
                 // Recarregar lista de vendas
-                await loadAdminSales();
+                await loadSales();
                 updateAdminStats();
 
             } catch (error) {
