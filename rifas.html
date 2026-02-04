@@ -725,7 +725,7 @@
                         </div>
                         <div class="stat-box">
                             <div class="stat-label">Números Vendidos</div>
-                            <div class="stat-value"><span id="soldCount">0</span>/100</div>
+                            <div class="stat-value"><span id="soldCount">0</span>/<span id="totalNumbersDisplay">100</span></div>
                         </div>
                     </div>
 
@@ -860,6 +860,14 @@
                 <div class="form-group">
                     <label class="form-label">Valor por Número (R$)</label>
                     <input type="number" class="form-input" id="adminPrice" placeholder="5.00" step="0.01" min="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quantidade de Números (Cotas)</label>
+                    <input type="number" class="form-input" id="adminTotalNumbers" placeholder="100" min="10" max="10000" value="100">
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 5px;">
+                        Escolha quantos números terá a rifa (ex: 50, 100, 500, 1000)
+                    </p>
                 </div>
 
                 <div class="form-group">
@@ -1036,6 +1044,7 @@
             document.getElementById('raffleTitle').textContent = currentRaffle.title;
             document.getElementById('raffleDescription').textContent = currentRaffle.description;
             document.getElementById('pricePerNumber').textContent = `R$ ${currentRaffle.price_per_number.toFixed(2)}`;
+            document.getElementById('totalNumbersDisplay').textContent = currentRaffle.total_numbers || 100;
 
             if (currentRaffle.promo_enabled) {
                 document.getElementById('promoSection').style.display = 'block';
@@ -1083,7 +1092,9 @@
             const grid = document.getElementById('numbersGrid');
             grid.innerHTML = '';
 
-            for (let i = 1; i <= 100; i++) {
+            const totalNumbers = currentRaffle.total_numbers || 100;
+
+            for (let i = 1; i <= totalNumbers; i++) {
                 const box = document.createElement('div');
                 box.className = 'number-box';
                 box.textContent = i;
@@ -1374,6 +1385,7 @@
             document.getElementById('adminDescription').value = currentRaffle.description || '';
             document.getElementById('adminImage').value = currentRaffle.image_url || '';
             document.getElementById('adminPrice').value = currentRaffle.price_per_number || '';
+            document.getElementById('adminTotalNumbers').value = currentRaffle.total_numbers || 100;
             document.getElementById('adminPromoEnabled').checked = currentRaffle.promo_enabled || false;
             document.getElementById('adminPromoDiscount').value = currentRaffle.promo_discount || '';
             document.getElementById('adminPromoMinNumbers').value = currentRaffle.promo_min_numbers || '';
@@ -1425,6 +1437,7 @@
                     description: document.getElementById('adminDescription').value,
                     image_url: document.getElementById('adminImage').value,
                     price_per_number: parseFloat(document.getElementById('adminPrice').value),
+                    total_numbers: parseInt(document.getElementById('adminTotalNumbers').value) || 100,
                     promo_enabled: document.getElementById('adminPromoEnabled').checked,
                     promo_discount: parseInt(document.getElementById('adminPromoDiscount').value) || 0,
                     promo_min_numbers: parseInt(document.getElementById('adminPromoMinNumbers').value) || 0
@@ -1582,7 +1595,7 @@
             }, 0);
 
             document.getElementById('adminTotalSold').textContent = `R$ ${totalSold.toFixed(2)}`;
-            document.getElementById('adminNumbersSold').textContent = `${soldNumbers.size}/100`;
+            document.getElementById('adminNumbersSold').textContent = `${soldNumbers.size}/${currentRaffle.total_numbers || 100}`;
             document.getElementById('adminBuyersCount').textContent = approvedSales.length;
         }
 
