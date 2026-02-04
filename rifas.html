@@ -838,6 +838,12 @@
             <div class="admin-section">
                 <h2 class="admin-section-title">⚙️ Configurar Rifa</h2>
                 
+                <div id="noRaffleWarning" style="display: none; background: rgba(255, 165, 0, 0.1); border: 2px solid #ffa500; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                    <p style="color: #ffa500; font-weight: 600; margin: 0;">
+                        ⚠️ Nenhuma rifa ativa encontrada. Preencha os dados abaixo e clique em "Criar Nova Rifa".
+                    </p>
+                </div>
+                
                 <div class="form-group">
                     <label class="form-label">Título do Prêmio</label>
                     <input type="text" class="form-input" id="adminTitle" placeholder="Ex: AK-47 | Redline (Field-Tested)">
@@ -896,8 +902,11 @@
                     <input type="number" class="form-input" id="adminPromoMinNumbers" placeholder="10" min="2" max="50">
                 </div>
 
-                <button class="btn-primary" onclick="saveRaffleConfig()">💾 Salvar Configurações</button>
-                <button class="btn-primary" onclick="finishRaffle()" style="background: linear-gradient(135deg, #ff4444, #cc0000); margin-left: 10px;">
+                <button class="btn-primary" onclick="saveRaffleConfig()" id="btnSaveRaffle">💾 Salvar Configurações</button>
+                <button class="btn-primary" onclick="createNewRaffle()" id="btnCreateRaffle" style="display: none; background: linear-gradient(135deg, #00ff88, #00dd77); color: black;">
+                    ✨ Criar Nova Rifa
+                </button>
+                <button class="btn-primary" onclick="finishRaffle()" id="btnFinishRaffle" style="background: linear-gradient(135deg, #ff4444, #cc0000); margin-left: 10px;">
                     🏁 Finalizar Rifa
                 </button>
             </div>
@@ -1493,7 +1502,24 @@
         }
 
         async function loadAdminData() {
-            if (!currentRaffle) return;
+            if (!currentRaffle) {
+                // Não há rifa ativa - mostrar modo de criação
+                console.log('⚠️ Nenhuma rifa ativa - modo de criação');
+                document.getElementById('noRaffleWarning').style.display = 'block';
+                document.getElementById('btnSaveRaffle').style.display = 'none';
+                document.getElementById('btnFinishRaffle').style.display = 'none';
+                document.getElementById('btnCreateRaffle').style.display = 'inline-block';
+                
+                // Carregar vendas (vazio)
+                document.getElementById('salesList').innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
+                return;
+            }
+
+            // Tem rifa ativa - mostrar modo de edição
+            document.getElementById('noRaffleWarning').style.display = 'none';
+            document.getElementById('btnSaveRaffle').style.display = 'inline-block';
+            document.getElementById('btnFinishRaffle').style.display = 'inline-block';
+            document.getElementById('btnCreateRaffle').style.display = 'none';
 
             // Carregar configurações
             document.getElementById('adminTitle').value = currentRaffle.title || '';
