@@ -88,8 +88,8 @@
         }
 
         .logo {
-            width: 180px;
-            height: 180px;
+            width: 120px;
+            height: 120px;
             margin: 0 auto 20px;
         }
 
@@ -1565,6 +1565,72 @@
                 document.getElementById('imagePreview').style.display = 'block';
             };
             reader.readAsDataURL(file);
+        }
+
+        // Criar nova rifa
+        async function createNewRaffle() {
+            console.log('🔵 createNewRaffle chamada!');
+            
+            try {
+                const title = document.getElementById('adminTitle').value;
+                const description = document.getElementById('adminDescription').value;
+                const imageUrl = document.getElementById('adminImage').value;
+                const price = parseFloat(document.getElementById('adminPrice').value);
+
+                console.log('📝 Valores coletados:', { title, description, imageUrl, price });
+
+                // Validações
+                if (!title || !description || !imageUrl || !price) {
+                    console.log('❌ Validação falhou - campos vazios');
+                    alert('❌ Preencha todos os campos obrigatórios:\n- Título\n- Descrição\n- Imagem\n- Preço');
+                    return;
+                }
+
+                if (price <= 0) {
+                    console.log('❌ Validação falhou - preço inválido');
+                    alert('❌ O preço deve ser maior que zero!');
+                    return;
+                }
+
+                const newRaffle = {
+                    title: title,
+                    description: description,
+                    image_url: imageUrl,
+                    price_per_number: price,
+                    total_numbers: parseInt(document.getElementById('adminTotalNumbers').value) || 100,
+                    max_per_person: parseInt(document.getElementById('adminMaxPerPerson').value) || 0,
+                    promo_enabled: document.getElementById('adminPromoEnabled').checked,
+                    promo_discount: parseInt(document.getElementById('adminPromoDiscount').value) || 0,
+                    promo_min_numbers: parseInt(document.getElementById('adminPromoMinNumbers').value) || 0,
+                    active: true,
+                    created_at: new Date().toISOString()
+                };
+
+                console.log('✨ Criando nova rifa:', newRaffle);
+                console.log('🔌 Supabase client:', !!supabaseClient);
+
+                const { data, error } = await supabaseClient
+                    .from('raffles')
+                    .insert(newRaffle)
+                    .select()
+                    .single();
+
+                console.log('📥 Resposta do Supabase:', { data, error });
+
+                if (error) {
+                    console.error('❌ Erro do Supabase:', error);
+                    throw error;
+                }
+
+                console.log('✅ Rifa criada com sucesso!');
+                alert('✅ Nova rifa criada com sucesso!\n\nA página será recarregada.');
+                location.reload();
+
+            } catch (error) {
+                console.error('❌ Erro ao criar rifa:', error);
+                console.error('❌ Detalhes:', error.message);
+                alert('❌ Erro ao criar rifa: ' + error.message);
+            }
         }
 
         async function saveRaffleConfig() {
