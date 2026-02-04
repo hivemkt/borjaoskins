@@ -1232,19 +1232,34 @@
                 console.log('📤 Enviando para MP:', paymentData);
 
                 // Chamar Netlify Function para criar pagamento PIX REAL
-                const response = await fetch('/.netlify/functions/create-pix', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(paymentData)
-                });
+                let response;
+                try {
+                    response = await fetch('/.netlify/functions/create-pix', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentData)
+                    });
+                    console.log('📥 Response recebida!');
+                } catch (fetchError) {
+                    console.error('❌ Erro no FETCH:', fetchError);
+                    throw new Error('Erro de conexão com o servidor: ' + fetchError.message);
+                }
 
                 console.log('📥 Response status:', response.status);
                 console.log('📥 Response ok:', response.ok);
                 
-                const pixData = await response.json();
-                console.log('📥 PixData completo:', pixData);
+                let pixData;
+                try {
+                    pixData = await response.json();
+                    console.log('📥 PixData completo:', pixData);
+                } catch (jsonError) {
+                    console.error('❌ Erro ao parsear JSON:', jsonError);
+                    const text = await response.text();
+                    console.error('❌ Response text:', text);
+                    throw new Error('Resposta inválida do servidor');
+                }
 
                 // Verificar se houve erro
                 if (!response.ok || pixData.error) {
@@ -1252,10 +1267,10 @@
                     throw new Error(pixData.error || pixData.message || 'Erro ao gerar PIX');
                 }
 
-                if (pixData.point_of_interaction && pixData.point_of_interaction.transaction_data) {
-                    const qrCode = pixData.point_of_interaction.transaction_data.qr_code_base64;
-                    const pixCodeString = pixData.point_of_interaction.transaction_data.qr_code;
-
+                // SDK v2 retorna qr_code direto no objeto
+                if (pixData.qr_code_base64 && pixData.qr_code) {
+                    console.log('✅ QR Code recebido com sucesso!');
+                    
                     // Atualizar venda com payment_id
                     await supabaseClient
                         .from('raffle_sales')
@@ -1263,18 +1278,30 @@
                         .eq('id', saleData.id);
 
                     // Mostrar QR Code
-                    displayPixQRCode(qrCode, pixCodeString, pixData.id, saleData.id);
+                    displayPixQRCode(pixData.qr_code_base64, pixData.qr_code, pixData.id, saleData.id);
 
                     // Iniciar verificação de pagamento
                     startPaymentCheck(pixData.id, saleData.id);
                 } else {
-                    throw new Error('Erro ao gerar PIX');
+                    console.error('❌ Resposta sem QR Code:', pixData);
+                    throw new Error('QR Code não encontrado na resposta');
                 }
 
             } catch (error) {
-                console.error('Erro ao gerar PIX:', error);
+                console.error('❌ ERRO COMPLETO ao gerar PIX:', error);
+                console.error('❌ Error name:', error.name);
+                console.error('❌ Error message:', error.message);
+                console.error('❌ Error stack:', error.stack);
+                
                 document.getElementById('pixModal').classList.remove('active');
-                alert('❌ Erro ao gerar pagamento PIX. Por favor, tente novamente.');
+                document.getElementById('pixModal').style.display = 'none';
+                
+                let errorMessage = 'Erro ao gerar pagamento PIX.';
+                if (error.message) {
+                    errorMessage += '\n\nDetalhes: ' + error.message;
+                }
+                
+                alert('❌ ' + errorMessage + '\n\nVerifique o console (F12) para mais detalhes.');
             }
         }
 
