@@ -1592,6 +1592,18 @@
                     return;
                 }
 
+                // 🔧 DESATIVAR TODAS AS RIFAS ATIVAS ANTES DE CRIAR NOVA
+                console.log('🔄 Desativando rifas antigas...');
+                const { error: deactivateError } = await supabaseClient
+                    .from('raffles')
+                    .update({ active: false })
+                    .eq('active', true);
+
+                if (deactivateError) {
+                    console.error('⚠️ Erro ao desativar rifas antigas:', deactivateError);
+                    // Não bloqueia a criação, só avisa
+                }
+
                 const newRaffle = {
                     title: title,
                     description: description,
