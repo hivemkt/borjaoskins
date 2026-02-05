@@ -127,7 +127,7 @@
         .raffle-image {
             width: 100%;
             max-width: 500px;
-            height: 300px;
+            height: 500px;      /* ✅ Altura igual à largura = quadrado */
             margin: 0 auto 30px;
             border-radius: 15px;
             overflow: hidden;
@@ -674,6 +674,12 @@
         @media (max-width: 768px) {
             .title {
                 font-size: 28px;
+            }
+
+            .raffle-image {
+                max-width: 100%;
+                height: auto;
+                aspect-ratio: 1 / 1; /* Mantém quadrado no mobile */
             }
 
             .numbers-grid {
