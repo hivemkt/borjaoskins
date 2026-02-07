@@ -785,7 +785,7 @@
             return null;
         }
 
-        // Extrair float do inspect link
+        // Extrair float do inspect link (D-value method)
         function extractFloat(inspectLink) {
             if (!inspectLink) return null;
             const match = inspectLink.match(/D(\d+)/);
@@ -796,13 +796,25 @@
             return null;
         }
 
-        // Buscar float da API CSFloat via Netlify Function
+        // Buscar float via Netlify Function
         async function getFloat(inspectLink) {
             try {
                 const url = `/.netlify/functions/get-float?url=${encodeURIComponent(inspectLink)}`;
                 const res = await fetch(url);
                 const data = await res.json();
                 return data?.float || null;
+            } catch {
+                return null;
+            }
+        }
+
+        // Buscar preço via Netlify Function (Buff163)
+        async function getBuffPrice(skinName) {
+            try {
+                const url = `/.netlify/functions/get-buff?name=${encodeURIComponent(skinName)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                return data?.price || null;
             } catch {
                 return null;
             }
@@ -1065,7 +1077,6 @@
                 // Corrigir inspect link
                 let inspectBtn = '';
                 if (item.inspect_link) {
-                    // Usar owner_steam_id se disponível, senão deixar vazio
                     const ownerId = item.owner_steam_id || '';
                     const link = item.inspect_link
                         .replace('%owner_steamid%', ownerId)
