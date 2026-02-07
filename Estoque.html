@@ -870,9 +870,11 @@
                     // Buscar float real da API CSFloat
                     let floatValue = null;
                     if (inspectLink) {
+                        // Montar inspect link correto
                         const fullInspectLink = inspectLink
-                            .replace('%owner_steamid%', '')
+                            .replace('%owner_steamid%', steamId)
                             .replace('%assetid%', asset.assetid);
+                        
                         floatValue = await getFloat(fullInspectLink);
                         
                         // Atualizar status a cada 10 itens
@@ -886,6 +888,7 @@
                         asset_id: asset.assetid,
                         class_id: asset.classid,
                         instance_id: asset.instanceid,
+                        owner_steam_id: steamId,
                         name: desc.market_name || desc.name,
                         type: desc.type || 'Unknown',
                         weapon: desc.tags?.find(t => t.category === 'Weapon')?.localized_tag_name || 
@@ -1075,13 +1078,12 @@
 
                 // Corrigir inspect link
                 let inspectBtn = '';
-                if (item.inspect_link) {
+                if (item.inspect_link && item.owner_steam_id) {
                     const link = item.inspect_link
-                        .replace('%owner_steamid%', '')
+                        .replace('%owner_steamid%', item.owner_steam_id)
                         .replace('%assetid%', item.asset_id);
                     
-                    // Usar steam:// protocol
-                    inspectBtn = `<a href="steam://rungame/730/76561202255233023/+csgo_econ_action_preview ${link}" class="btn btn-inspect">🔍 Inspecionar</a>`;
+                    inspectBtn = `<a href="${link}" class="btn btn-inspect">🔍 Inspecionar</a>`;
                 }
 
                 const whatsappMsg = encodeURIComponent(`Olá! Tenho interesse na skin: ${item.name}`);
