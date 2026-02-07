@@ -404,8 +404,8 @@
 
     <script>
         // ===== CONFIGURAÇÃO =====
-        const SUPABASE_URL = 'https://yyoyxanloloupwoczkhr.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM'; // ⚠️ TROCAR
+        const SUPABASE_URL = 'https://nlpjugpeexxgtmrcrkwx.supabase.co';
+        const SUPABASE_KEY = 'SUA_SUPABASE_KEY_AQUI'; // ⚠️ TROCAR
 
         // Criar cliente Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -419,10 +419,10 @@
                 console.log('URL:', SUPABASE_URL);
                 console.log('KEY presente:', SUPABASE_KEY ? 'Sim' : 'Não');
                 
-                // Buscar ranking da tabela ranking_cache
-                console.log('📊 Buscando dados de ranking_cache...');
+                // Buscar ranking da tabela ranking_points
+                console.log('📊 Buscando dados de ranking_points...');
                 const { data: ranking, error } = await supabaseClient
-                    .from('ranking_cache')
+                    .from('ranking_points')
                     .select('*')
                     .order('total_points', { ascending: false })
                     .limit(100); // Top 100
@@ -447,14 +447,14 @@
                 // Calcular estatísticas totais
                 const totalCompetitors = ranking.length;
                 const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points || 0), 0);
-                const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_purchases || 0), 0);
+                const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
 
                 console.log('📊 Estatísticas:', { totalCompetitors, totalPoints, totalNumbers });
 
                 // Atualizar estatísticas
                 document.getElementById('totalCompetitors').textContent = totalCompetitors;
                 document.getElementById('totalNumbers').textContent = totalNumbers;
-                document.getElementById('totalPoints').textContent = totalPoints.toFixed(0);
+                document.getElementById('totalPoints').textContent = Math.round(totalPoints);
 
                 // Renderizar ranking
                 const container = document.getElementById('rankingContainer');
@@ -463,7 +463,7 @@
                 ranking.forEach((buyer, index) => {
                     const position = index + 1;
                     const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
-                    const firstName = buyer.first_name || buyer.buyer_name?.split(' ')[0] || 'Anônimo';
+                    const firstName = buyer.buyer_name?.split(' ')[0] || 'Anônimo';
                     const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
                     const purchases = parseInt(buyer.total_purchases || 0);
                     
