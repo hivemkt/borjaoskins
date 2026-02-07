@@ -626,7 +626,7 @@
                             <th>Nome</th>
                             <th>Telefone</th>
                             <th>Pontos</th>
-                            <th>Compras</th>
+                            <th>Cotas</th>
                             <th>Ações</th>
                         </tr>
                     </thead>
@@ -717,7 +717,7 @@
                     const fullName = lastName ? `${firstName} ${lastName}` : firstName;
                     
                     const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
-                    const purchases = parseInt(buyer.total_purchases || 0);
+                    const totalNumbers = parseInt(buyer.total_numbers || 0); // Total de cotas
                     
                     const item = document.createElement('div');
                     item.className = 'ranking-item';
@@ -732,7 +732,7 @@
                         ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
                         <div class="ranking-info-box">
                             <div class="ranking-name">${fullName}</div>
-                            <div class="ranking-numbers">${purchases} compra(s)</div>
+                            <div class="ranking-numbers">${totalNumbers} cota(s)</div>
                         </div>
                         <div class="ranking-points">
                             <div class="ranking-points-value">${points}</div>
@@ -819,7 +819,7 @@
                         <td>
                             <input type="number" value="${Math.round(player.total_points)}" id="points_${player.id}" style="width: 80px;" />
                         </td>
-                        <td>${player.total_purchases || 0}</td>
+                        <td>${player.total_numbers || 0}</td>
                         <td>
                             <button class="btn-save" onclick="savePlayer('${player.id}')">💾 Salvar</button>
                             <button class="btn-delete" onclick="deletePlayer('${player.id}', '${player.buyer_name}')">🗑️ Deletar</button>
