@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Ranking - Borjão Skins</title>
+    
+    <style>
+        @font-face {
+            font-family: 'Kenyan Coffee';
+            src: url('fonts/KENYAN_COFFEE_RG.TTF') format('truetype');
+        }
+
+        @font-face {
+            font-family: 'Orbitron';
+            src: url('fonts/Orbitron-VariableFont_wght.ttf') format('truetype');
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --purple: #9431ce;
+            --purple-glow: rgba(148, 49, 206, 0.4);
+        }
+
+        body {
+            font-family: 'Rajdhani', -apple-system, sans-serif;
+            background: #000;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background animado */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(148, 49, 206, 0.1) 0%, transparent 50%);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-image: 
+                linear-gradient(rgba(148, 49, 206, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 49, 206, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px var(--purple-glow));
+        }
+
+        .title {
+            font-family: 'Kenyan Coffee', sans-serif;
+            font-size: 48px;
+            color: var(--purple);
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px var(--purple-glow);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* Ranking Styles */
+        .ranking-header {
+            background: linear-gradient(135deg, rgba(148, 49, 206, 0.2), rgba(148, 49, 206, 0.05));
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .ranking-info {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .info-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Ranking Container */
+        .ranking-container {
+            margin-bottom: 30px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(148, 49, 206, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease backwards;
+        }
+
+        .ranking-item:hover {
+            background: rgba(148, 49, 206, 0.1);
+            border-color: var(--purple);
+            transform: translateX(5px);
+        }
+
+        /* Top 3 especial */
+        .ranking-item:nth-child(1) {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.05));
+            border-color: #FFD700;
+            animation-delay: 0.1s;
+        }
+
+        .ranking-item:nth-child(2) {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.15), rgba(192, 192, 192, 0.05));
+            border-color: #C0C0C0;
+            animation-delay: 0.2s;
+        }
+
+        .ranking-item:nth-child(3) {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.15), rgba(205, 127, 50, 0.05));
+            border-color: #CD7F32;
+            animation-delay: 0.3s;
+        }
+
+        .ranking-position {
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .ranking-item:nth-child(1) .ranking-position { color: #FFD700; }
+        .ranking-item:nth-child(2) .ranking-position { color: #C0C0C0; }
+        .ranking-item:nth-child(3) .ranking-position { color: #CD7F32; }
+
+        .ranking-medal {
+            font-size: 32px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .ranking-info-box {
+            flex: 1;
+        }
+
+        .ranking-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .ranking-numbers {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .ranking-points {
+            text-align: right;
+        }
+
+        .ranking-points-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--purple);
+        }
+
+        .ranking-points-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Empty state */
+        .ranking-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ranking-empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        .back-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid var(--purple);
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--purple-glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .ranking-name {
+                font-size: 16px;
+            }
+
+            .ranking-points-value {
+                font-size: 22px;
+            }
+
+            .info-value {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" style="text-decoration: none;">
+                <div class="logo">
+                    <img src="images/logodb.png" alt="Logo Borjão Skins">
+                </div>
+            </a>
+            <h1 class="title">🏆 RANKING</h1>
+            <p class="subtitle">TOP COMPRADORES DA RIFA</p>
+        </div>
+
+        <!-- Ranking Header -->
+        <div class="ranking-header">
+            <div class="ranking-info">
+                <div class="info-box">
+                    <div class="info-value" id="totalCompetitors">-</div>
+                    <div class="info-label">Competidores</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-value" id="totalNumbers">-</div>
+                    <div class="info-label">Números Vendidos</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-value" id="totalPoints">-</div>
+                    <div class="info-label">Pontos Totais</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingMessage" class="loading">
+            ⏳ Carregando ranking...
+        </div>
+
+        <!-- Ranking -->
+        <div class="ranking-container" id="rankingContainer" style="display: none;">
+            <!-- Preenchido via JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="ranking-empty" style="display: none;">
+            <div class="ranking-empty-icon">📊</div>
+            <h3 style="margin-bottom: 10px;">Nenhum comprador ainda</h3>
+            <p>Seja o primeiro a aparecer no ranking!</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="margin-bottom: 15px;">⚡ Atualizado em tempo real</p>
+            <a href="rifas.html" class="back-button">← Voltar para a Rifa</a>
+            <p style="margin-top: 20px; font-size: 11px;">
+                © 2024 Borjão Skins - Todos os direitos reservados
+            </p>
+        </div>
+    </div>
+
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script>
+        // ===== CONFIGURAÇÃO =====
+        const SUPABASE_URL = 'https://nlpjugpeexxgtmrcrkwx.supabase.co';
+        const SUPABASE_KEY = 'SUA_SUPABASE_KEY_AQUI'; // ⚠️ TROCAR
+
+        // Criar cliente Supabase
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ===== CARREGAR RANKING =====
+        async function loadRanking() {
+            try {
+                // Buscar rifa ativa
+                const { data: raffle, error: raffleError } = await supabaseClient
+                    .from('raffles')
+                    .select('id, title')
+                    .eq('active', true)
+                    .maybeSingle();
+
+                if (raffleError) throw raffleError;
+
+                if (!raffle) {
+                    showEmpty('Nenhuma rifa ativa no momento');
+                    return;
+                }
+
+                // Buscar vendas aprovadas
+                const { data: sales, error: salesError } = await supabaseClient
+                    .from('raffle_sales')
+                    .select('buyer_name, numbers')
+                    .eq('raffle_id', raffle.id)
+                    .eq('payment_status', 'approved');
+
+                if (salesError) throw salesError;
+
+                if (!sales || sales.length === 0) {
+                    showEmpty('Nenhum comprador ainda. Seja o primeiro!');
+                    return;
+                }
+
+                // Agrupar por comprador
+                const buyers = {};
+                let totalNumbers = 0;
+                
+                sales.forEach(sale => {
+                    const firstName = sale.buyer_name.split(' ')[0];
+                    const points = sale.numbers.length;
+                    totalNumbers += points;
+                    
+                    if (buyers[firstName]) {
+                        buyers[firstName].points += points;
+                        buyers[firstName].numbers = buyers[firstName].numbers.concat(sale.numbers);
+                    } else {
+                        buyers[firstName] = {
+                            name: firstName,
+                            points: points,
+                            numbers: [...sale.numbers]
+                        };
+                    }
+                });
+
+                // Ordenar por pontos
+                const ranking = Object.values(buyers)
+                    .sort((a, b) => b.points - a.points);
+
+                // Atualizar estatísticas
+                document.getElementById('totalCompetitors').textContent = ranking.length;
+                document.getElementById('totalNumbers').textContent = totalNumbers;
+                document.getElementById('totalPoints').textContent = totalNumbers;
+
+                // Renderizar ranking
+                const container = document.getElementById('rankingContainer');
+                container.innerHTML = '';
+                
+                ranking.forEach((buyer, index) => {
+                    const position = index + 1;
+                    const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
+                    
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.style.animationDelay = `${index * 0.1}s`;
+                    
+                    item.innerHTML = `
+                        ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
+                        <div class="ranking-info-box">
+                            <div class="ranking-name">${buyer.name}</div>
+                            <div class="ranking-numbers">${buyer.numbers.length} número(s) comprado(s)</div>
+                        </div>
+                        <div class="ranking-points">
+                            <div class="ranking-points-value">${buyer.points}</div>
+                            <div class="ranking-points-label">pontos</div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(item);
+                });
+
+                // Mostrar ranking
+                document.getElementById('loadingMessage').style.display = 'none';
+                container.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erro ao carregar ranking:', error);
+                showEmpty('Erro ao carregar ranking. Tente novamente.');
+            }
+        }
+
+        function showEmpty(message) {
+            document.getElementById('loadingMessage').style.display = 'none';
+            document.getElementById('rankingContainer').style.display = 'none';
+            const emptyState = document.getElementById('emptyState');
+            emptyState.querySelector('p').textContent = message;
+            emptyState.style.display = 'block';
+        }
+
+        // Carregar ao abrir página
+        loadRanking();
+
+        // Atualizar a cada 10 segundos
+        setInterval(loadRanking, 10000);
+    </script>
+</body>
+</html>
