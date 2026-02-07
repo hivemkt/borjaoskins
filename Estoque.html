@@ -720,7 +720,18 @@
             </div>
 
             <div class="admin-form">
-                <h3>📊 Configurações WhatsApp</h3>
+                <h3>📊 Buscar Floats (Opcional)</h3>
+                <p style="color: rgba(255,255,255,0.6); font-size: 13px; margin-bottom: 15px;">
+                    Busca o float real de cada skin via API. Pode demorar alguns minutos.
+                </p>
+                <button class="btn-load" onclick="updateFloats()" id="btnUpdateFloats">
+                    🎯 Buscar Floats de Todas as Skins
+                </button>
+                <div id="floatStatus" class="admin-status" style="display: none;"></div>
+            </div>
+
+            <div class="admin-form">
+                <h3>📱 Configurações WhatsApp</h3>
                 <input type="text" id="whatsappNumber" placeholder="Número WhatsApp (ex: 5511999999999)" value="5511999999999">
                 <button class="btn-load" onclick="saveWhatsapp()">💾 Salvar Número</button>
             </div>
@@ -796,19 +807,22 @@
             return null;
         }
 
-        // Buscar float real da API CSFloat
+        // Buscar float real via Netlify Function (proxy para CSFloat API)
         async function getFloat(inspectLink) {
             if (!inspectLink) return null;
             
             try {
-                const response = await fetch(`https://api.csfloat.com/?url=${encodeURIComponent(inspectLink)}`);
+                const response = await fetch(`/.netlify/functions/get-float?url=${encodeURIComponent(inspectLink)}`);
                 
                 if (!response.ok) {
+                    console.error('Erro na function get-float:', response.status);
                     return null;
                 }
                 
                 const data = await response.json();
-                return data?.iteminfo?.floatvalue || null;
+                console.log('Float response:', data);
+                
+                return data.float || null;
             } catch (error) {
                 console.error('Erro ao buscar float:', error);
                 return null;
@@ -860,29 +874,11 @@
 
                 const tradableItems = [];
                 
-                let processedCount = 0;
                 for (const asset of data.assets) {
                     const desc = descMap[`${asset.classid}_${asset.instanceid}`];
                     if (!desc || desc.tradable !== 1) continue;
 
                     const inspectLink = desc.actions?.[0]?.link || null;
-                    
-                    // Buscar float real da API CSFloat
-                    let floatValue = null;
-                    if (inspectLink) {
-                        // Montar inspect link correto
-                        const fullInspectLink = inspectLink
-                            .replace('%owner_steamid%', steamId)
-                            .replace('%assetid%', asset.assetid);
-                        
-                        floatValue = await getFloat(fullInspectLink);
-                        
-                        // Atualizar status a cada 10 itens
-                        processedCount++;
-                        if (processedCount % 10 === 0) {
-                            showAdminStatus(`⏳ Buscando floats... ${processedCount}/${data.assets.length}`, '');
-                        }
-                    }
 
                     const item = {
                         asset_id: asset.assetid,
@@ -896,7 +892,7 @@
                         rarity: desc.tags?.find(t => t.category === 'Rarity')?.localized_tag_name || 'Normal',
                         rarity_color: desc.name_color ? '#' + desc.name_color : '#b0b0b0',
                         wear: desc.tags?.find(t => t.category === 'Exterior')?.localized_tag_name || 'N/A',
-                        float_value: floatValue,
+                        float_value: null,
                         image_url: desc.icon_url ? `https://community.cloudflare.steamstatic.com/economy/image/${desc.icon_url}` : null,
                         inspect_link: inspectLink,
                         tradable: true,
@@ -953,6 +949,93 @@
             status.className = 'admin-status';
             if (type === 'success') status.classList.add('status-success');
             if (type === 'error') status.classList.add('status-error');
+        }
+
+        function showFloatStatus(message, type) {
+            const status = document.getElementById('floatStatus');
+            status.textContent = message;
+            status.style.display = 'block';
+            status.className = 'admin-status';
+            if (type === 'success') status.classList.add('status-success');
+            if (type === 'error') status.classList.add('status-error');
+        }
+
+        // Buscar floats de todas as skins do banco
+        async function updateFloats() {
+            const btn = document.getElementById('btnUpdateFloats');
+            btn.disabled = true;
+            showFloatStatus('⏳ Buscando itens do banco...', '');
+
+            try {
+                // Buscar todos os itens
+                const { data: items, error } = await supabaseClient
+                    .from('inventory_items')
+                    .select('*')
+                    .eq('tradable', true)
+                    .order('name', { ascending: true });
+
+                if (error) throw error;
+                if (!items || items.length === 0) {
+                    throw new Error('Nenhum item no banco');
+                }
+
+                showFloatStatus(`⏳ Buscando floats de ${items.length} itens...`, '');
+
+                let updated = 0;
+                let failed = 0;
+
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    
+                    if (!item.inspect_link || !item.owner_steam_id) {
+                        failed++;
+                        continue;
+                    }
+
+                    // Montar inspect link
+                    const fullInspectLink = item.inspect_link
+                        .replace('%owner_steamid%', item.owner_steam_id)
+                        .replace('%assetid%', item.asset_id);
+
+                    // Buscar float
+                    const floatValue = await getFloat(fullInspectLink);
+
+                    if (floatValue !== null) {
+                        // Atualizar no banco
+                        const { error: updateError } = await supabaseClient
+                            .from('inventory_items')
+                            .update({ float_value: floatValue })
+                            .eq('id', item.id);
+
+                        if (!updateError) {
+                            updated++;
+                        } else {
+                            failed++;
+                        }
+                    } else {
+                        failed++;
+                    }
+
+                    // Atualizar status
+                    showFloatStatus(`⏳ Processando... ${i + 1}/${items.length} | ✅ ${updated} | ❌ ${failed}`, '');
+
+                    // Delay para não sobrecarregar
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+
+                showFloatStatus(`✅ Concluído! ${updated} floats atualizados, ${failed} falharam.`, 'success');
+                
+                // Recarregar inventário público
+                setTimeout(() => {
+                    loadPublicInventory();
+                }, 2000);
+
+            } catch (err) {
+                console.error('Erro:', err);
+                showFloatStatus(`❌ Erro: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         // Carregar inventário do Supabase
@@ -1078,9 +1161,11 @@
 
                 // Corrigir inspect link
                 let inspectBtn = '';
-                if (item.inspect_link && item.owner_steam_id) {
+                if (item.inspect_link) {
+                    // Usar owner_steam_id se disponível, senão deixar vazio
+                    const ownerId = item.owner_steam_id || '';
                     const link = item.inspect_link
-                        .replace('%owner_steamid%', item.owner_steam_id)
+                        .replace('%owner_steamid%', ownerId)
                         .replace('%assetid%', item.asset_id);
                     
                     inspectBtn = `<a href="${link}" class="btn btn-inspect">🔍 Inspecionar</a>`;
