@@ -796,13 +796,13 @@
             return null;
         }
 
-        // Buscar float da API CSFloat
+        // Buscar float da API CSFloat via Netlify Function
         async function getFloat(inspectLink) {
             try {
-                const url = `https://api.csfloat.com/?url=${encodeURIComponent(inspectLink)}`;
+                const url = `/.netlify/functions/get-float?url=${encodeURIComponent(inspectLink)}`;
                 const res = await fetch(url);
                 const data = await res.json();
-                return data?.iteminfo?.floatvalue || null;
+                return data?.float || null;
             } catch {
                 return null;
             }
