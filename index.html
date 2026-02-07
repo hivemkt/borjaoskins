@@ -286,11 +286,23 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        /* Vídeos nos botões */
+        .btn-video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+            filter: drop-shadow(0 10px 30px var(--purple-glow));
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; /* Impede que o vídeo interfira no clique */
+        }
+
         .link-btn:hover {
             transform: translateY(-5px) scale(1.02);
         }
 
-        .link-btn:hover .btn-image {
+        .link-btn:hover .btn-image,
+        .link-btn:hover .btn-video {
             filter: drop-shadow(0 15px 40px var(--purple-glow)) brightness(1.05);
         }
 
@@ -442,31 +454,44 @@
         <div class="links">
             <div class="link-item">
                 <a href="vender-skins.html" class="link-btn">
-                    <img src="images/videos/botao1.mp4" alt="Vender/Upgrade" class="btn-image">
+                    <video class="btn-video" autoplay loop muted playsinline>
+                        <source src="videos/botao1.mp4" type="video/mp4">
+                        <!-- Fallback para navegadores sem suporte -->
+                        <img src="images/botao1.png" alt="Vender/Upgrade" class="btn-image">
+                    </video>
                 </a>
             </div>
 
             <div class="link-item">
-                <a href="rifas.html" class="link-btn">
-                    <img src="images/botao2.png" alt="Rifa de Skins" class="btn-image">
+                <a href="em-breve.html" class="link-btn">
+                    <video class="btn-video" autoplay loop muted playsinline>
+                        <source src="videos/botao2.mp4" type="video/mp4">
+                        <img src="images/botao2.png" alt="Rifa de Skins" class="btn-image">
+                    </video>
                 </a>
             </div>
 
             <div class="link-item">
                 <a href="estoque.html" class="link-btn">
-                    <img src="images/botao3.png" alt="Skins em Estoque" class="btn-image">
+                    <video class="btn-video" autoplay loop muted playsinline>
+                        <source src="videos/botao3.mp4" type="video/mp4">
+                        <img src="images/botao3.png" alt="Skins em Estoque" class="btn-image">
+                    </video>
                 </a>
             </div>
 
             <div class="link-item">
                 <a href="https://instagram.com/seu-usuario" class="link-btn" target="_blank">
-                    <img src="images/botao4.png" alt="Instagram" class="btn-image">
+                    <video class="btn-video" autoplay loop muted playsinline>
+                        <source src="videos/botao4.mp4" type="video/mp4">
+                        <img src="images/botao4.png" alt="Instagram" class="btn-image">
+                    </video>
                 </a>
             </div>
         </div>
 
         <div class="footer">
-            Desenvolvido por hive.mkt
+            Desenvolvido por hive.mkt com 💖
         </div>
     </div>
 
