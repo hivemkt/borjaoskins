@@ -323,7 +323,7 @@
                 </div>
             </a>
             <h1 class="title">🏆 RANKING</h1>
-            <p class="subtitle">TOP COMPRADORES DA RIFA</p>
+            <p class="subtitle">RANKING GERAL DE TODOS OS TEMPOS</p>
         </div>
 
         <!-- Ranking Header -->
@@ -376,8 +376,8 @@
 
     <script>
         // ===== CONFIGURAÇÃO =====
-        const SUPABASE_URL = 'https://yyoyxanloloupwoczkhr.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM'; // ⚠️ TROCAR
+        const SUPABASE_URL = 'https://nlpjugpeexxgtmrcrkwx.supabase.co';
+        const SUPABASE_KEY = 'SUA_SUPABASE_KEY_AQUI'; // ⚠️ TROCAR
 
         // Criar cliente Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -385,63 +385,29 @@
         // ===== CARREGAR RANKING =====
         async function loadRanking() {
             try {
-                // Buscar rifa ativa
-                const { data: raffle, error: raffleError } = await supabaseClient
-                    .from('raffles')
-                    .select('id, title')
-                    .eq('active', true)
-                    .maybeSingle();
+                // Buscar ranking da tabela ranking_points
+                const { data: ranking, error } = await supabaseClient
+                    .from('ranking_points')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+                    .limit(100); // Top 100
 
-                if (raffleError) throw raffleError;
+                if (error) throw error;
 
-                if (!raffle) {
-                    showEmpty('Nenhuma rifa ativa no momento');
-                    return;
-                }
-
-                // Buscar vendas aprovadas
-                const { data: sales, error: salesError } = await supabaseClient
-                    .from('raffle_sales')
-                    .select('buyer_name, numbers')
-                    .eq('raffle_id', raffle.id)
-                    .eq('payment_status', 'approved');
-
-                if (salesError) throw salesError;
-
-                if (!sales || sales.length === 0) {
+                if (!ranking || ranking.length === 0) {
                     showEmpty('Nenhum comprador ainda. Seja o primeiro!');
                     return;
                 }
 
-                // Agrupar por comprador
-                const buyers = {};
-                let totalNumbers = 0;
-                
-                sales.forEach(sale => {
-                    const firstName = sale.buyer_name.split(' ')[0];
-                    const points = sale.numbers.length;
-                    totalNumbers += points;
-                    
-                    if (buyers[firstName]) {
-                        buyers[firstName].points += points;
-                        buyers[firstName].numbers = buyers[firstName].numbers.concat(sale.numbers);
-                    } else {
-                        buyers[firstName] = {
-                            name: firstName,
-                            points: points,
-                            numbers: [...sale.numbers]
-                        };
-                    }
-                });
-
-                // Ordenar por pontos
-                const ranking = Object.values(buyers)
-                    .sort((a, b) => b.points - a.points);
+                // Calcular estatísticas totais
+                const totalCompetitors = ranking.length;
+                const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points), 0);
+                const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
 
                 // Atualizar estatísticas
-                document.getElementById('totalCompetitors').textContent = ranking.length;
+                document.getElementById('totalCompetitors').textContent = totalCompetitors;
                 document.getElementById('totalNumbers').textContent = totalNumbers;
-                document.getElementById('totalPoints').textContent = totalNumbers;
+                document.getElementById('totalPoints').textContent = totalPoints.toFixed(0);
 
                 // Renderizar ranking
                 const container = document.getElementById('rankingContainer');
@@ -450,6 +416,8 @@
                 ranking.forEach((buyer, index) => {
                     const position = index + 1;
                     const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
+                    const firstName = buyer.buyer_name.split(' ')[0];
+                    const points = parseFloat(buyer.total_points).toFixed(2);
                     
                     const item = document.createElement('div');
                     item.className = 'ranking-item';
@@ -458,11 +426,11 @@
                     item.innerHTML = `
                         ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
                         <div class="ranking-info-box">
-                            <div class="ranking-name">${buyer.name}</div>
-                            <div class="ranking-numbers">${buyer.numbers.length} número(s) comprado(s)</div>
+                            <div class="ranking-name">${firstName}</div>
+                            <div class="ranking-numbers">${buyer.total_numbers} número(s) • ${buyer.total_purchases} compra(s)</div>
                         </div>
                         <div class="ranking-points">
-                            <div class="ranking-points-value">${buyer.points}</div>
+                            <div class="ranking-points-value">R$ ${points}</div>
                             <div class="ranking-points-label">pontos</div>
                         </div>
                     `;
