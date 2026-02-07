@@ -497,7 +497,13 @@
                 ranking.forEach((buyer, index) => {
                     const position = index + 1;
                     const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
-                    const firstName = buyer.buyer_name?.split(' ')[0] || 'Anônimo';
+                    
+                    // Pegar nome e sobrenome (primeiras 2 palavras)
+                    const nameParts = (buyer.buyer_name || 'Anônimo').split(' ');
+                    const firstName = nameParts[0] || 'Anônimo';
+                    const lastName = nameParts[1] || '';
+                    const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+                    
                     const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
                     const purchases = parseInt(buyer.total_purchases || 0);
                     
@@ -513,7 +519,7 @@
                     item.innerHTML = `
                         ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
                         <div class="ranking-info-box">
-                            <div class="ranking-name">${firstName}</div>
+                            <div class="ranking-name">${fullName}</div>
                             <div class="ranking-numbers">${purchases} compra(s)</div>
                         </div>
                         <div class="ranking-points">
