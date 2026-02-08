@@ -25,9 +25,20 @@ exports.handler = async (event) => {
   
   try {
     // Decodificar URL
-    const decodedLink = decodeURIComponent(inspectLink);
+    let decodedLink = inspectLink;
+    let previousLink = '';
+    
+    while (decodedLink !== previousLink) {
+      previousLink = decodedLink;
+      try {
+        decodedLink = decodeURIComponent(decodedLink);
+      } catch (e) {
+        break;
+      }
+    }
+    
     console.log('🔓 Link decodificado:', decodedLink);
-    const apiKey = 'ecf6cc14-827a-4819-822a-f05a785ffff5';
+    
     // Extrair parâmetros S, A, D, M
     const sMatch = decodedLink.match(/S(\d+)/);
     const aMatch = decodedLink.match(/A(\d+)/);
@@ -35,9 +46,9 @@ exports.handler = async (event) => {
     const mMatch = decodedLink.match(/M(\d+)/);
     
     if (!sMatch || !aMatch || !dMatch) {
-      console.log('⚠️ Parâmetros S, A ou D não encontrados');
+      console.log('⚠️ Parâmetros não encontrados');
       return {
-        statusCode: 400,
+        statusCode: 200,
         headers,
         body: JSON.stringify({ 
           success: false,
@@ -52,27 +63,27 @@ exports.handler = async (event) => {
     const d = dMatch[1];
     const m = mMatch ? mMatch[1] : '0';
     
-    console.log(`📊 Parâmetros extraídos: S=${s}, A=${a}, D=${d}, M=${m}`);
+    console.log(`📊 Parâmetros: S=${s}, A=${a}, D=${d}, M=${m}`);
     
-    // Chamar API PriceEmpire
-    const apiUrl = `https://api.pricempire.com/v3/inspect?s=${s}&a=${a}&d=${d}&m=${m}`;
-    console.log('🌐 Chamando API:', apiUrl);
+    // Usar API CSGOFloat (gratuita e funciona sem key)
+    const apiUrl = `https://api.csgofloat.com/?url=${encodeURIComponent(decodedLink)}`;
+    console.log('🌐 Chamando CSGOFloat API');
     
     const data = await new Promise((resolve, reject) => {
       https.get(apiUrl, {
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'User-Agent': 'Mozilla/5.0',
           'Accept': 'application/json'
         }
       }, (res) => {
         let body = '';
         
-        console.log('📡 Status HTTP:', res.statusCode);
+        console.log('📡 Status:', res.statusCode);
         
         res.on('data', chunk => body += chunk);
         
         res.on('end', () => {
-          console.log('📄 Response body (primeiros 500 chars):', body.substring(0, 500));
+          console.log('📄 Response (200 chars):', body.substring(0, 200));
           
           if (res.statusCode !== 200) {
             reject(new Error(`API retornou status ${res.statusCode}: ${body}`));
@@ -83,22 +94,22 @@ exports.handler = async (event) => {
             const parsed = JSON.parse(body);
             resolve(parsed);
           } catch (e) {
-            console.error('❌ Erro ao parsear JSON:', e.message);
-            reject(new Error('Resposta da API não é JSON válido'));
+            console.error('❌ JSON inválido');
+            reject(new Error('Resposta não é JSON válido'));
           }
         });
       }).on('error', (err) => {
-        console.error('❌ Erro na requisição HTTP:', err.message);
+        console.error('❌ Erro HTTP:', err.message);
         reject(err);
       });
     });
     
-    console.log('✅ Dados recebidos da API:', JSON.stringify(data).substring(0, 300));
+    console.log('✅ Dados recebidos');
     
-    // Extrair float da resposta (tentar diferentes campos)
-    const floatValue = data?.floatvalue || data?.paintwear || data?.float || null;
+    // Extrair float da resposta
+    const floatValue = data?.iteminfo?.floatvalue || data?.floatvalue || data?.float || null;
     
-    console.log('🎯 Float extraído:', floatValue);
+    console.log('🎯 Float:', floatValue);
     
     return {
       statusCode: 200,
@@ -112,7 +123,6 @@ exports.handler = async (event) => {
     
   } catch (error) {
     console.error('💥 Erro:', error.message);
-    console.error('Stack:', error.stack);
     
     return {
       statusCode: 500,
