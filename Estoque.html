@@ -775,11 +775,22 @@
                 const dMatch = inspectLink.match(/D(\d+)/);
                 if (!dMatch) return null;
                 
-                const dValue = BigInt(dMatch[1]);
-                const maxUint64 = BigInt('18446744073709551615');
+                // D-value é um número de 64 bits que representa o float
+                // Precisamos converter de BigInt para float IEEE 754
+                const d = dMatch[1];
                 
-                // Float = D / (2^64 - 1)
-                const floatValue = Number(dValue) / Number(maxUint64);
+                // Conversão correta: interpretar como double precision float
+                const buffer = new ArrayBuffer(8);
+                const view = new DataView(buffer);
+                
+                // Converter string para BigInt e então para bytes
+                const bigIntValue = BigInt(d);
+                
+                // Escrever os 8 bytes do BigInt no buffer
+                view.setBigUint64(0, bigIntValue, true); // true = little-endian
+                
+                // Ler como float de 64 bits (double)
+                const floatValue = view.getFloat64(0, true);
                 
                 return floatValue;
             } catch (err) {
