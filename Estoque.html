@@ -766,7 +766,7 @@
             return null;
         }
 
-        // Calcular float localmente do D-value (SEM API)
+        // Calcular float do D-value (fórmula correta da Valve)
         function calculateFloat(inspectLink) {
             if (!inspectLink) return null;
             
@@ -775,28 +775,22 @@
                 const dMatch = inspectLink.match(/D(\d+)/);
                 if (!dMatch) return null;
                 
-                // D-value é um número de 64 bits que representa o float
-                // Precisamos converter de BigInt para float IEEE 754
                 const d = dMatch[1];
                 
-                // Conversão correta: interpretar como double precision float
-                const buffer = new ArrayBuffer(8);
-                const view = new DataView(buffer);
+                // A Valve codifica o float como: D = floor(float * 10^16)
+                // Então para decodificar: float = D / 10^16
                 
-                // Converter string para BigInt e então para bytes
-                const bigIntValue = BigInt(d);
-                
-                // Escrever os 8 bytes do BigInt no buffer
-                view.setBigUint64(0, bigIntValue, true); // true = little-endian
-                
-                // Ler como float de 64 bits (double)
-                let floatValue = view.getFloat64(0, true);
+                // Usar parseFloat para manter precisão
+                const dNumber = parseFloat(d);
+                const floatValue = dNumber / 10000000000000000; // 10^16
                 
                 // Validar: float de skins CS2 está sempre entre 0 e 1
                 if (floatValue < 0 || floatValue > 1 || isNaN(floatValue) || !isFinite(floatValue)) {
-                    console.warn('Float inválido:', floatValue, 'D-value:', d);
+                    console.warn('Float fora do range:', floatValue.toFixed(10), 'D-value:', d);
                     return null;
                 }
+                
+                console.log('Float calculado:', floatValue.toFixed(6), 'D-value:', d);
                 
                 return floatValue;
             } catch (err) {
