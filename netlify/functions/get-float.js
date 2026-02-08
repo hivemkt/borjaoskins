@@ -1,77 +1,61 @@
-const cache = {};
+const axios = require('axios');
 
 exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Content-Type': 'application/json'
-  };
+  let inspectLink = event.queryStringParameters.url;
+  // Sua chave inserida diretamente para evitar erros de configuração
+  const API_KEY = 'ecf6cc14-827a-4819-822a-f05a785ffff5'; 
 
-  // Pega o link de inspeção da URL (ex: /.netlify/functions/get-float?url=...)
-  const inspect = event.queryStringParameters?.url;
-  
-  if (!inspect) {
-    return {
-      statusCode: 400,
-      headers,
-      body: JSON.stringify({ error: 'URL obrigatória' })
-    };
-  }
-
-  // 1. Verificação de Cache (evita gastar sua cota da API com itens repetidos)
-  if (cache[inspect] && Date.now() - cache[inspect].time < 300000) {
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(cache[inspect].data)
+  if (!inspectLink) {
+    return { 
+      statusCode: 400, 
+      body: JSON.stringify({ error: "Link de inspeção ausente" }) 
     };
   }
 
   try {
-    const api = `https://api.csfloat.com/?url=${encodeURIComponent(inspect)}`;
+    // 1. Decodifica o link recebido do frontend
+    const cleanLink = decodeURIComponent(inspectLink).trim();
 
-    // 2. Chamada para o CSFloat com a sua API Key
-    const response = await fetch(api, {
-      method: 'GET',
-      headers: {
-        // COLOQUE SUA CHAVE DENTRO DAS ASPAS ABAIXO
-        'Authorization': '3A4HinEGqHrA552atJeocOQG8LKLl1zs' 
-      }
+    // 2. Chamada para o Pricempire (Endpoint de Float)
+    // O Pricempire exige a chave na URL ou nos parâmetros
+    const response = await axios.get(`https://api.pricempire.com/v1/csgo/float`, {
+      params: {
+        api_key: API_KEY,
+        url: cleanLink
+      },
+      timeout: 15000 // Aumentei para 15s porque bots de inspeção podem demorar
     });
 
-    // Verifica se a API do CSFloat aceitou a requisição
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`CSFloat API Error: ${response.status} - ${errorText}`);
+    // 3. Retorno dos dados
+    if (response.data && response.data.iteminfo) {
+      return {
+        statusCode: 200,
+        headers: { 
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*" 
+        },
+        body: JSON.stringify({
+          float: response.data.iteminfo.floatvalue,
+          paintindex: response.data.iteminfo.paintindex
+        })
+      };
+    } else {
+      return { 
+        statusCode: 404, 
+        body: JSON.stringify({ error: "Item não encontrado no banco do Pricempire" }) 
+      };
     }
 
-    const data = await response.json();
-
-    // 3. Estruturação do resultado
-    const result = {
-      success: true,
-      float: data?.iteminfo?.floatvalue || null,
-      paintseed: data?.iteminfo?.paintseed || null,
-      paintindex: data?.iteminfo?.paintindex || null
-    };
-
-    // Salva no cache temporário
-    cache[inspect] = {
-      time: Date.now(),
-      data: result
-    };
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify(result)
-    };
-
-  } catch (err) {
-    console.error('Erro na Function:', err.message);
+  } catch (error) {
+    console.error("Erro na API Pricempire:", error.response?.data || error.message);
+    
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ success: false, error: err.message })
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify({ 
+        error: "Erro no servidor de Float", 
+        details: error.response?.data || error.message 
+      })
     };
   }
 };
