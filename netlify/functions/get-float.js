@@ -34,7 +34,7 @@ exports.handler = async (event) => {
       method: 'GET',
       headers: {
         // COLOQUE SUA CHAVE DENTRO DAS ASPAS ABAIXO
-        'Authorization': 'SUA_API_KEY_AQUI' 
+        'Authorization': '3A4HinEGqHrA552atJeocOQG8LKLl1zs' 
       }
     });
 
