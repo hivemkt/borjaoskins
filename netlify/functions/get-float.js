@@ -1,60 +1,51 @@
-const axios = require('axios');
-
 exports.handler = async (event) => {
-  let inspectLink = event.queryStringParameters.url;
-  // Sua chave inserida diretamente para evitar erros de configuração
-  const API_KEY = 'ecf6cc14-827a-4819-822a-f05a785ffff5'; 
-
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+  
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+  
+  const inspectLink = event.queryStringParameters?.url;
+  
   if (!inspectLink) {
-    return { 
-      statusCode: 400, 
-      body: JSON.stringify({ error: "Link de inspeção ausente" }) 
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: 'Inspect link obrigatório' })
     };
   }
-
+  
   try {
-    // 1. Decodifica o link recebido do frontend
-    const cleanLink = decodeURIComponent(inspectLink).trim();
-
-    // 2. Chamada para o Pricempire (Endpoint de Float)
-    // O Pricempire exige a chave na URL ou nos parâmetros
-    const response = await axios.get(`https://api.pricempire.com/v1/csgo/float`, {
-      params: {
-        api_key: API_KEY,
-        url: cleanLink
-      },
-      timeout: 15000 // Aumentei para 15s porque bots de inspeção podem demorar
+    const apiUrl = `https://api.csfloat.com/?url=${encodeURIComponent(inspectLink)}`;
+    
+    const response = await fetch(apiUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0'
+      }
     });
-
-    // 3. Retorno dos dados
-    if (response.data && response.data.iteminfo) {
-      return {
-        statusCode: 200,
-        headers: { 
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*" 
-        },
-        body: JSON.stringify({
-          float: response.data.iteminfo.floatvalue,
-          paintindex: response.data.iteminfo.paintindex
-        })
-      };
-    } else {
-      return { 
-        statusCode: 404, 
-        body: JSON.stringify({ error: "Item não encontrado no banco do Pricempire" }) 
-      };
-    }
-
-  } catch (error) {
-    console.error("Erro na API Pricempire:", error.response?.data || error.message);
+    
+    const data = await response.json();
     
     return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        success: true,
+        float: data?.iteminfo?.floatvalue || null,
+        data: data
+      })
+    };
+  } catch (error) {
+    return {
       statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ 
-        error: "Erro no servidor de Float", 
-        details: error.response?.data || error.message 
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message
       })
     };
   }
