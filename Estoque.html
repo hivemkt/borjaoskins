@@ -100,7 +100,6 @@
             text-transform: uppercase;
         }
 
-        /* Navbar de Filtros */
         .navbar {
             background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
             border: 2px solid var(--purple);
@@ -181,7 +180,6 @@
             border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        /* Stats */
         .stats-bar {
             background: rgba(148, 49, 206, 0.1);
             border: 2px solid rgba(148, 49, 206, 0.3);
@@ -214,7 +212,6 @@
             text-transform: uppercase;
         }
 
-        /* Items Grid */
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -265,6 +262,19 @@
             }
         }
 
+        .quantity-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+        }
+
         .tradable-badge {
             position: absolute;
             top: 10px;
@@ -297,18 +307,6 @@
             margin-bottom: 8px;
             min-height: 45px;
             line-height: 1.4;
-        }
-
-        .item-price {
-            background: linear-gradient(135deg, var(--purple), #6b1fa0);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            text-align: center;
-            margin-bottom: 12px;
-            font-family: 'Orbitron', monospace;
-            font-weight: 700;
-            font-size: 18px;
         }
 
         .item-info {
@@ -400,7 +398,6 @@
             box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
         }
 
-        /* Pagination */
         .pagination {
             display: flex;
             justify-content: center;
@@ -450,7 +447,6 @@
             opacity: 0.3;
         }
 
-        /* Admin Button */
         .admin-btn {
             position: fixed;
             bottom: 20px;
@@ -474,7 +470,6 @@
             background: rgba(148, 49, 206, 0.1);
         }
 
-        /* Admin Panel */
         .admin-panel {
             display: none;
             position: fixed;
@@ -636,7 +631,6 @@
             <p class="subtitle">Skins disponíveis para venda</p>
         </div>
 
-        <!-- Navbar de Filtros -->
         <div class="navbar" id="navbar" style="display: none;">
             <div class="filters">
                 <div class="filter-group">
@@ -654,7 +648,6 @@
                     <select id="sortBy">
                         <option value="name">Nome (A-Z)</option>
                         <option value="float">Float (Menor)</option>
-                        <option value="price">Preço (Menor)</option>
                         <option value="rarity">Raridade</option>
                     </select>
                 </div>
@@ -674,15 +667,14 @@
             </div>
         </div>
 
-        <!-- Stats Bar -->
         <div class="stats-bar" id="statsBar" style="display: none;">
             <div class="stat-item">
                 <div class="stat-value" id="totalItems">0</div>
                 <div class="stat-label">Total de Skins</div>
             </div>
             <div class="stat-item">
-                <div class="stat-value" id="tradableItems">0</div>
-                <div class="stat-label">Trocáveis</div>
+                <div class="stat-value" id="uniqueItems">0</div>
+                <div class="stat-label">Únicas</div>
             </div>
             <div class="stat-item">
                 <div class="stat-value" id="filteredItems">0</div>
@@ -697,12 +689,9 @@
         </div>
 
         <div class="items-grid" id="itemsGrid"></div>
-
-        <!-- Pagination -->
         <div class="pagination" id="pagination" style="display: none;"></div>
     </div>
 
-    <!-- Admin Panel -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
             <div class="admin-header">
@@ -729,15 +718,12 @@
 
     <button class="admin-btn" onclick="openAdmin()" title="Admin">⚙️</button>
 
-    <!-- Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // ===== CONFIGURAÇÃO SUPABASE =====
         const SUPABASE_URL = 'https://yyoyxanloloupwoczkhr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         const ADMIN_PASSWORD = 'borjao777';
         const WHATSAPP_KEY = 'borjao_whatsapp';
 
@@ -746,7 +732,6 @@
         let currentPage = 1;
         let itemsPerPage = 12;
 
-        // Admin functions
         function openAdmin() {
             const password = prompt('🔐 Digite a senha:');
             if (password !== ADMIN_PASSWORD) {
@@ -754,16 +739,12 @@
                 return;
             }
             document.getElementById('adminPanel').classList.add('active');
-            loadAdminSettings();
+            const whatsapp = localStorage.getItem(WHATSAPP_KEY) || '5511999999999';
+            document.getElementById('whatsappNumber').value = whatsapp;
         }
 
         function closeAdmin() {
             document.getElementById('adminPanel').classList.remove('active');
-        }
-
-        function loadAdminSettings() {
-            const whatsapp = localStorage.getItem(WHATSAPP_KEY) || '5511999999999';
-            document.getElementById('whatsappNumber').value = whatsapp;
         }
 
         function saveWhatsapp() {
@@ -785,25 +766,24 @@
             return null;
         }
 
-        // Extrair float do inspect link
-        function extractFloat(inspectLink) {
+        // Calcular float localmente do D-value (SEM API)
+        function calculateFloat(inspectLink) {
             if (!inspectLink) return null;
-            const match = inspectLink.match(/D(\d+)/);
-            if (match) {
-                const d = parseInt(match[1]);
-                return (d / 10000000000000000).toFixed(10);
-            }
-            return null;
-        }
-
-        // Buscar float da API CSFloat via Netlify Function
-        async function getFloat(inspectLink) {
+            
             try {
-                const url = `/.netlify/functions/get-float?url=${encodeURIComponent(inspectLink)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                return data?.float || null;
-            } catch {
+                // Extrair D-value do link
+                const dMatch = inspectLink.match(/D(\d+)/);
+                if (!dMatch) return null;
+                
+                const dValue = BigInt(dMatch[1]);
+                const maxUint64 = BigInt('18446744073709551615');
+                
+                // Float = D / (2^64 - 1)
+                const floatValue = Number(dValue) / Number(maxUint64);
+                
+                return floatValue;
+            } catch (err) {
+                console.error('Erro ao calcular float:', err);
                 return null;
             }
         }
@@ -825,27 +805,25 @@
             }
 
             btn.disabled = true;
-            showAdminStatus('⏳ Carregando inventário da Steam...', '');
+            showAdminStatus('⏳ Carregando inventário...', '');
 
             try {
-                // Buscar inventário da Steam
                 const response = await fetch(`/.netlify/functions/get-inventory?steamId=${steamId}`);
                 
                 if (!response.ok) {
                     const result = await response.json();
-                    throw new Error(result.error || result.message || 'Erro ao carregar');
+                    throw new Error(result.error || 'Erro ao carregar');
                 }
 
                 const result = await response.json();
                 const data = result.data;
 
                 if (!data || !data.assets || data.assets.length === 0) {
-                    throw new Error('Nenhum item encontrado no inventário');
+                    throw new Error('Nenhum item encontrado');
                 }
 
-                showAdminStatus('⏳ Processando itens trocáveis...', '');
+                showAdminStatus('⏳ Processando itens...', '');
 
-                // Processar itens
                 const descMap = {};
                 data.descriptions.forEach(desc => {
                     descMap[`${desc.classid}_${desc.instanceid}`] = desc;
@@ -859,18 +837,19 @@
 
                     const inspectLink = desc.actions?.[0]?.link || null;
                     
-                    // Montar inspect link completo
                     let fullInspectLink = null;
+                    let floatValue = null;
+                    
                     if (inspectLink) {
                         fullInspectLink = inspectLink
                             .replace('%owner_steamid%', steamId)
                             .replace('%assetid%', asset.assetid);
+                        
+                        // Calcular float localmente (sem API)
+                        floatValue = calculateFloat(fullInspectLink);
                     }
-                    
-                    // Buscar float
-                    const floatValue = fullInspectLink ? await getFloat(fullInspectLink) : null;
 
-                    const item = {
+                    tradableItems.push({
                         asset_id: asset.assetid,
                         class_id: asset.classid,
                         instance_id: asset.instanceid,
@@ -885,39 +864,25 @@
                         float_value: floatValue,
                         image_url: desc.icon_url ? `https://community.cloudflare.steamstatic.com/economy/image/${desc.icon_url}` : null,
                         inspect_link: inspectLink,
-                        tradable: true,
-                        price: null
-                    };
-
-                    tradableItems.push(item);
+                        tradable: true
+                    });
                 }
 
                 if (tradableItems.length === 0) {
                     throw new Error('Nenhum item trocável encontrado');
                 }
 
-                showAdminStatus(`⏳ Salvando ${tradableItems.length} itens no banco...`, '');
+                showAdminStatus(`⏳ Salvando ${tradableItems.length} itens...`, '');
 
-                // Limpar inventário antigo
-                const { error: deleteError } = await supabaseClient
-                    .from('inventory_items')
-                    .delete()
-                    .neq('id', '00000000-0000-0000-0000-000000000000');
+                await supabaseClient.from('inventory_items').delete().neq('id', '00000000-0000-0000-0000-000000000000');
 
-                if (deleteError) {
-                    console.error('Erro ao limpar:', deleteError);
-                }
-
-                // Inserir novos itens
-                const { data: insertedData, error: insertError } = await supabaseClient
-                    .from('inventory_items')
-                    .insert(tradableItems);
+                const { error: insertError } = await supabaseClient.from('inventory_items').insert(tradableItems);
 
                 if (insertError) {
-                    throw new Error(`Erro ao salvar no banco: ${insertError.message}`);
+                    throw new Error(`Erro ao salvar: ${insertError.message}`);
                 }
 
-                showAdminStatus(`✅ ${tradableItems.length} itens salvos com sucesso!`, 'success');
+                showAdminStatus(`✅ ${tradableItems.length} itens salvos!`, 'success');
                 
                 setTimeout(() => {
                     closeAdmin();
@@ -941,40 +906,41 @@
             if (type === 'error') status.classList.add('status-error');
         }
 
-        // Carregar inventário do Supabase
         async function loadPublicInventory() {
             try {
-                console.log('📡 Carregando inventário do Supabase...');
-
                 const { data: items, error } = await supabaseClient
                     .from('inventory_items')
                     .select('*')
                     .eq('tradable', true)
                     .order('name', { ascending: true });
 
-                if (error) {
-                    console.error('Erro Supabase:', error);
-                    throw error;
-                }
+                if (error) throw error;
 
                 if (!items || items.length === 0) {
-                    console.log('⚠️ Nenhum item no banco');
                     document.getElementById('emptyState').style.display = 'block';
                     document.getElementById('navbar').style.display = 'none';
                     document.getElementById('statsBar').style.display = 'none';
                     return;
                 }
 
-                console.log(`✅ ${items.length} itens carregados do banco`);
+                // Agrupar itens duplicados
+                const grouped = {};
+                items.forEach(item => {
+                    const key = `${item.name}_${item.float_value || 'noFloat'}`;
+                    if (!grouped[key]) {
+                        grouped[key] = { ...item, quantity: 1, items: [item] };
+                    } else {
+                        grouped[key].quantity++;
+                        grouped[key].items.push(item);
+                    }
+                });
 
-                allItems = items;
+                allItems = Object.values(grouped);
 
-                // Mostrar UI
                 document.getElementById('emptyState').style.display = 'none';
                 document.getElementById('navbar').style.display = 'block';
                 document.getElementById('statsBar').style.display = 'flex';
 
-                // Popular filtro de armas
                 const weapons = [...new Set(items.map(item => item.weapon))].sort();
                 const weaponFilter = document.getElementById('weaponFilter');
                 weaponFilter.innerHTML = '<option value="">Todas</option>';
@@ -982,15 +948,13 @@
                     weaponFilter.innerHTML += `<option value="${weapon}">${weapon}</option>`;
                 });
 
-                // Atualizar stats
                 document.getElementById('totalItems').textContent = items.length;
-                document.getElementById('tradableItems').textContent = items.length;
+                document.getElementById('uniqueItems').textContent = allItems.length;
 
-                // Aplicar filtros
                 applyFilters();
 
             } catch (err) {
-                console.error('❌ Erro ao carregar inventário:', err);
+                console.error('❌ Erro:', err);
                 document.getElementById('emptyState').style.display = 'block';
             }
         }
@@ -1000,14 +964,12 @@
             const weaponFilter = document.getElementById('weaponFilter').value;
             const sortBy = document.getElementById('sortBy').value;
 
-            // Filtrar
             filteredItems = allItems.filter(item => {
                 const matchSearch = item.name.toLowerCase().includes(search);
                 const matchWeapon = !weaponFilter || item.weapon === weaponFilter;
                 return matchSearch && matchWeapon;
             });
 
-            // Ordenar
             filteredItems.sort((a, b) => {
                 switch(sortBy) {
                     case 'name':
@@ -1016,10 +978,6 @@
                         const floatA = parseFloat(a.float_value) || 999;
                         const floatB = parseFloat(b.float_value) || 999;
                         return floatA - floatB;
-                    case 'price':
-                        const priceA = parseFloat(a.price) || 999999;
-                        const priceB = parseFloat(b.price) || 999999;
-                        return priceA - priceB;
                     case 'rarity':
                         return b.rarity_color.localeCompare(a.rarity_color);
                     default:
@@ -1062,13 +1020,10 @@
                 card.className = 'item-card';
                 card.style.animationDelay = `${index * 0.05}s`;
 
-                // Corrigir inspect link
                 let inspectBtn = '';
-                if (item.inspect_link) {
-                    // Usar owner_steam_id se disponível, senão deixar vazio
-                    const ownerId = item.owner_steam_id || '';
+                if (item.inspect_link && item.owner_steam_id) {
                     const link = item.inspect_link
-                        .replace('%owner_steamid%', ownerId)
+                        .replace('%owner_steamid%', item.owner_steam_id)
                         .replace('%assetid%', item.asset_id);
                     
                     inspectBtn = `<a href="${link}" class="btn btn-inspect">🔍 Inspecionar</a>`;
@@ -1077,14 +1032,12 @@
                 const whatsappMsg = encodeURIComponent(`Olá! Tenho interesse na skin: ${item.name}`);
                 const whatsappLink = `https://wa.me/${whatsapp}?text=${whatsappMsg}`;
 
-                const priceDisplay = item.price ? `R$ ${parseFloat(item.price).toFixed(2)}` : 'Consultar preço';
-
                 card.innerHTML = `
+                    ${item.quantity > 1 ? `<div class="quantity-badge">${item.quantity}x</div>` : ''}
                     <div class="tradable-badge">✓ Trocável</div>
                     <img src="${item.image_url}" alt="${item.name}" class="item-image" loading="lazy">
                     <div class="item-name">${item.name}</div>
                     <div class="item-rarity" style="background-color: ${item.rarity_color}">${item.rarity}</div>
-                    <div class="item-price">${priceDisplay}</div>
                     <div class="item-info">
                         <div class="info-row">
                             <span class="info-label">Arma:</span>
@@ -1125,7 +1078,6 @@
             pagination.style.display = 'flex';
             pagination.innerHTML = '';
 
-            // Botão anterior
             const prevBtn = document.createElement('button');
             prevBtn.className = 'page-btn';
             prevBtn.textContent = '←';
@@ -1137,7 +1089,6 @@
             };
             pagination.appendChild(prevBtn);
 
-            // Páginas
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
                     const pageBtn = document.createElement('button');
@@ -1157,7 +1108,6 @@
                 }
             }
 
-            // Botão próximo
             const nextBtn = document.createElement('button');
             nextBtn.className = 'page-btn';
             nextBtn.textContent = '→';
@@ -1170,14 +1120,9 @@
             pagination.appendChild(nextBtn);
         }
 
-        // Event listeners
         document.getElementById('itemsPerPage').addEventListener('change', renderPage);
 
-        // Carregar ao iniciar
-        console.log('🚀 Iniciando aplicação...');
         loadPublicInventory();
-
-        // Auto-refresh a cada 30 segundos
         setInterval(loadPublicInventory, 30000);
     </script>
 </body>
