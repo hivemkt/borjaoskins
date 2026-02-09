@@ -15,10 +15,12 @@
             padding: 0;
             box-sizing: border-box;
         }
+
         :root {
             --purple: #9431ce;
             --purple-glow: rgba(148, 49, 206, 0.4);
         }
+
         body {
             font-family: 'Rajdhani', -apple-system, sans-serif;
             background: #000;
@@ -26,6 +28,7 @@
             min-height: 100vh;
             overflow-x: hidden;
         }
+
         /* Background animado */
         .bg-animation {
             position: fixed;
@@ -36,6 +39,7 @@
             z-index: 0;
             background: radial-gradient(circle at 50% 50%, rgba(148, 49, 206, 0.1) 0%, transparent 50%);
         }
+
         .grid-overlay {
             position: fixed;
             top: 0;
@@ -49,6 +53,7 @@
             background-size: 50px 50px;
             pointer-events: none;
         }
+
         .container {
             position: relative;
             z-index: 2;
@@ -56,23 +61,27 @@
             margin: 0 auto;
             padding: 40px 20px;
         }
+
         /* Header */
         .header {
             text-align: center;
             margin-bottom: 40px;
         }
+
         .logo {
             width: 120px;
             height: 120px;
             margin: 0 auto 20px;
             cursor: pointer;
         }
+
         .logo img {
             width: 100%;
             height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 20px var(--purple-glow));
         }
+
         .title {
             font-family: 'Orbitron', sans-serif;
             font-size: 48px;
@@ -80,11 +89,13 @@
             margin-bottom: 10px;
             text-shadow: 0 0 30px var(--purple-glow);
         }
+
         .subtitle {
             font-size: 16px;
             color: rgba(255, 255, 255, 0.6);
             letter-spacing: 2px;
         }
+
         /* Ranking Styles */
         .ranking-header {
             background: linear-gradient(135deg, rgba(148, 49, 206, 0.2), rgba(148, 49, 206, 0.05));
@@ -94,16 +105,19 @@
             margin-bottom: 30px;
             text-align: center;
         }
+
         .ranking-info {
             display: flex;
             justify-content: space-around;
             gap: 20px;
             flex-wrap: wrap;
         }
+
         .info-box {
             flex: 1;
             min-width: 150px;
         }
+
         .info-value {
             font-family: 'Orbitron', monospace;
             font-size: 32px;
@@ -111,16 +125,19 @@
             color: var(--purple);
             margin-bottom: 5px;
         }
+
         .info-label {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         /* Ranking Container */
         .ranking-container {
             margin-bottom: 30px;
         }
+
         .ranking-item {
             display: flex;
             align-items: center;
@@ -133,6 +150,7 @@
             transition: all 0.3s ease;
             animation: slideIn 0.5s ease backwards;
         }
+
         /* Top 3 - Borda roxa bem destacada */
         .ranking-item:nth-child(1),
         .ranking-item:nth-child(2),
@@ -141,6 +159,7 @@
             box-shadow: 0 0 15px rgba(148, 49, 206, 0.3);
             background: rgba(148, 49, 206, 0.05);
         }
+
         /* Top 1 - MAIOR que os outros */
         .ranking-item:nth-child(1) {
             padding: 20px 25px; /* Padding maior */
@@ -148,20 +167,25 @@
             margin-bottom: 20px; /* Mais espaço embaixo */
             box-shadow: 0 0 25px rgba(148, 49, 206, 0.5); /* Brilho mais forte */
         }
+
         .ranking-item:nth-child(1) .ranking-name {
             font-size: 24px; /* Fonte maior */
         }
+
         .ranking-item:nth-child(1) .ranking-points-value {
             font-size: 32px; /* Pontos maiores */
         }
+
         .ranking-item:nth-child(1) .ranking-medal {
             font-size: 36px; /* Medalha maior */
         }
+
         /* 4º ao 16º - Cinza leve */
         .ranking-item:nth-child(n+4):nth-child(-n+16) {
             border-color: rgba(148, 49, 206, 0.3);
             box-shadow: 0 0 8px rgba(148, 49, 206, 0.1);
         }
+
         /* 17º em diante - Cinza apagado, "desligado" */
         .ranking-item-inactive {
             border-color: rgba(128, 128, 128, 0.15) !important;
@@ -169,6 +193,7 @@
             opacity: 0.4;
             box-shadow: none !important;
         }
+
         .ranking-item-inactive .ranking-position,
         .ranking-item-inactive .ranking-name,
         .ranking-item-inactive .ranking-numbers,
@@ -176,36 +201,43 @@
         .ranking-item-inactive .ranking-points-label {
             color: rgba(255, 255, 255, 0.3) !important;
         }
+
         .ranking-item:hover {
             background: rgba(148, 49, 206, 0.1);
             border-color: var(--purple);
             transform: translateX(5px);
         }
+
         .ranking-item:nth-child(1):hover {
             transform: scale(1.05) translateX(5px); /* Mantém escala ao hover */
         }
+
         .ranking-item-inactive:hover {
             background: rgba(255, 255, 255, 0.02) !important;
             border-color: rgba(128, 128, 128, 0.25) !important;
             transform: translateX(2px);
             opacity: 0.6;
         }
+
         /* Top 3 especial - APENAS ROXO */
         .ranking-item:nth-child(1) {
             background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
             border-color: var(--purple);
             animation-delay: 0.1s;
         }
+
         .ranking-item:nth-child(2) {
             background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
             border-color: var(--purple);
             animation-delay: 0.2s;
         }
+
         .ranking-item:nth-child(3) {
             background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
             border-color: var(--purple);
             animation-delay: 0.3s;
         }
+
         .ranking-position {
             font-family: 'Orbitron', monospace;
             font-size: 24px;
@@ -214,39 +246,47 @@
             text-align: center;
             color: var(--purple); /* Todos roxos */
         }
+
         .ranking-medal {
             font-size: 32px;
             min-width: 40px;
             text-align: center;
         }
+
         .ranking-info-box {
             flex: 1;
         }
+
         .ranking-name {
             font-size: 20px;
             font-weight: 600;
             color: white;
             margin-bottom: 3px;
         }
+
         .ranking-numbers {
             font-size: 14px;
             color: rgba(255, 255, 255, 0.5);
         }
+
         .ranking-points {
             text-align: right;
         }
+
         .ranking-points-value {
             font-family: 'Orbitron', monospace;
             font-size: 28px;
             font-weight: 700;
             color: var(--purple);
         }
+
         .ranking-points-label {
             font-size: 11px;
             color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -257,22 +297,26 @@
                 transform: translateX(0);
             }
         }
+
         /* Empty state */
         .ranking-empty {
             text-align: center;
             padding: 60px 20px;
             color: rgba(255, 255, 255, 0.3);
         }
+
         .ranking-empty-icon {
             font-size: 64px;
             margin-bottom: 20px;
         }
+
         /* Loading */
         .loading {
             text-align: center;
             padding: 40px;
             color: rgba(255, 255, 255, 0.5);
         }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -280,6 +324,7 @@
             color: rgba(255, 255, 255, 0.4);
             font-size: 13px;
         }
+
         .back-button {
             display: inline-block;
             background: linear-gradient(135deg, var(--purple), #6b1fa0);
@@ -292,25 +337,31 @@
             transition: all 0.3s ease;
             border: 2px solid var(--purple);
         }
+
         .back-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px var(--purple-glow);
         }
+
         /* Responsive */
         @media (max-width: 768px) {
             .title {
                 font-size: 32px;
             }
+
             .ranking-name {
                 font-size: 16px;
             }
+
             .ranking-points-value {
                 font-size: 22px;
             }
+
             .info-value {
                 font-size: 24px;
             }
         }
+
         /* Admin Button */
         .admin-btn {
             position: fixed;
@@ -327,12 +378,14 @@
             z-index: 999;
             opacity: 0.15; /* Bem transparente */
         }
+
         .admin-btn:hover {
             opacity: 1; /* Aparece ao passar mouse */
             color: var(--purple);
             transform: rotate(90deg); /* Gira ao hover */
             background: rgba(148, 49, 206, 0.1);
         }
+
         /* Admin Panel */
         .admin-panel {
             display: none;
@@ -346,9 +399,11 @@
             overflow-y: auto;
             padding: 40px 20px;
         }
+
         .admin-panel.active {
             display: block;
         }
+
         .admin-container {
             max-width: 1000px;
             margin: 0 auto;
@@ -357,6 +412,7 @@
             border-radius: 15px;
             padding: 30px;
         }
+
         .admin-header {
             display: flex;
             justify-content: space-between;
@@ -365,11 +421,13 @@
             border-bottom: 2px solid var(--purple);
             padding-bottom: 20px;
         }
+
         .admin-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 32px;
             color: var(--purple);
         }
+
         .close-btn {
             background: rgba(255, 0, 0, 0.2);
             border: 2px solid #ff0000;
@@ -380,14 +438,17 @@
             font-weight: 600;
             transition: all 0.3s ease;
         }
+
         .close-btn:hover {
             background: rgba(255, 0, 0, 0.4);
         }
+
         .admin-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
+
         .admin-table th {
             background: var(--purple);
             color: white;
@@ -395,14 +456,17 @@
             text-align: left;
             font-weight: 600;
         }
+
         .admin-table td {
             padding: 12px;
             border-bottom: 1px solid rgba(148, 49, 206, 0.2);
             color: white;
         }
+
         .admin-table tr:hover {
             background: rgba(148, 49, 206, 0.1);
         }
+
         .admin-table input {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--purple);
@@ -411,6 +475,7 @@
             border-radius: 5px;
             width: 100%;
         }
+
         .btn-save {
             background: linear-gradient(135deg, #00cc00, #008800);
             border: 2px solid #00cc00;
@@ -421,6 +486,7 @@
             font-weight: 600;
             margin-right: 5px;
         }
+
         .btn-delete {
             background: linear-gradient(135deg, #ff0000, #cc0000);
             border: 2px solid #ff0000;
@@ -430,6 +496,7 @@
             cursor: pointer;
             font-weight: 600;
         }
+
         .btn-add {
             background: linear-gradient(135deg, var(--purple), #6b1fa0);
             border: 2px solid var(--purple);
@@ -441,10 +508,12 @@
             margin-top: 20px;
             font-size: 16px;
         }
+
         .btn-save:hover, .btn-delete:hover, .btn-add:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
         }
+
         .add-form {
             background: rgba(148, 49, 206, 0.1);
             border: 2px solid var(--purple);
@@ -452,6 +521,7 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .add-form input {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid var(--purple);
@@ -466,6 +536,7 @@
 <body>
     <div class="bg-animation"></div>
     <div class="grid-overlay"></div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -477,6 +548,7 @@
             <h1 class="title">🏆 RANKING</h1>
             <p class="subtitle">RANKING GERAL DE TODOS OS TEMPOS</p>
         </div>
+
         <!-- Ranking Header -->
         <div class="ranking-header">
             <div class="ranking-info">
@@ -494,20 +566,24 @@
                 </div>
             </div>
         </div>
+
         <!-- Loading -->
         <div id="loadingMessage" class="loading">
             ⏳ Carregando ranking...
         </div>
+
         <!-- Ranking -->
         <div class="ranking-container" id="rankingContainer" style="display: none;">
             <!-- Preenchido via JavaScript -->
         </div>
+
         <!-- Empty State -->
         <div id="emptyState" class="ranking-empty" style="display: none;">
             <div class="ranking-empty-icon">📊</div>
             <h3 style="margin-bottom: 10px;">Nenhum comprador ainda</h3>
             <p>Seja o primeiro a aparecer no ranking!</p>
         </div>
+
         <!-- Footer -->
         <div class="footer">
             <p style="margin-bottom: 15px;">⚡ Atualizado em tempo real</p>
@@ -517,6 +593,7 @@
             </p>
         </div>
     </div>
+
     <!-- Admin Panel -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
@@ -524,6 +601,7 @@
                 <h2 class="admin-title">⚙️ Painel Admin - Ranking</h2>
                 <button class="close-btn" onclick="closeAdminPanel()">✕ Fechar</button>
             </div>
+
             <!-- Add New Player -->
             <div class="add-form">
                 <h3 style="color: var(--purple); margin-bottom: 15px;">➕ Adicionar Novo Jogador</h3>
@@ -533,6 +611,7 @@
                 <input type="number" id="newNumbers" placeholder="Cotas" style="width: 100px;">
                 <button class="btn-add" onclick="addPlayer()">Adicionar</button>
             </div>
+
             <!-- Players Table -->
             <div style="overflow-x: auto;">
                 <table class="admin-table">
@@ -555,76 +634,102 @@
             </div>
         </div>
     </div>
+
     <!-- Botão Admin Discreto (engrenagem invisível) -->
     <button class="admin-btn" onclick="openAdminPanel()" title="Admin">
         ⚙️
     </button>
+
     <!-- Supabase -->
-    <script src="https:
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
         const SUPABASE_URL = window.ENV?.SUPABASE_URL || process.env.SUPABASE_URL;
         const SUPABASE_KEY = window.ENV?.SUPABASE_KEY || process.env.SUPABASE_KEY;
+        
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         const ADMIN_PASSWORD_HASH = window.ENV?.ADMIN_HASH || process.env.ADMIN_HASH;
+
         async function hashPassword(password) {
             const msgBuffer = new TextEncoder().encode(password);
             const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
+
         async function verifyAdminPassword(password) {
             const hash = await hashPassword(password);
             return hash === ADMIN_PASSWORD_HASH;
         }
+
         async function loadRanking() {
             console.log('🔵 loadRanking chamada!');
+            
             try {
                 console.log('📡 Conectando ao Supabase...');
                 console.log('URL:', SUPABASE_URL);
                 console.log('KEY presente:', SUPABASE_KEY ? 'Sim' : 'Não');
+                
                 console.log('📊 Buscando dados de ranking_points...');
                 const { data: ranking, error } = await supabaseClient
                     .from('ranking_points')
                     .select('*')
                     .order('total_points', { ascending: false })
-                    .limit(100); 
+                    .limit(100); // Top 100
+
                 console.log('📥 Resposta do Supabase:');
                 console.log('Data:', ranking);
                 console.log('Error:', error);
+
                 if (error) {
                     console.error('❌ Erro do Supabase:', error);
                     throw error;
                 }
+
                 if (!ranking || ranking.length === 0) {
                     console.log('⚠️ Nenhum dado retornado');
                     showEmpty('Nenhum comprador ainda. Seja o primeiro!');
                     return;
                 }
+
                 console.log(`✅ ${ranking.length} registros encontrados!`);
+
                 const totalCompetitors = ranking.length;
                 const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points || 0), 0);
                 const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
+
                 console.log('📊 Estatísticas:', { totalCompetitors, totalPoints, totalNumbers });
+
                 document.getElementById('totalCompetitors').textContent = totalCompetitors;
                 document.getElementById('totalNumbers').textContent = totalNumbers;
                 document.getElementById('totalPoints').textContent = Math.round(totalPoints);
+
                 const container = document.getElementById('rankingContainer');
                 container.innerHTML = '';
+                
                 ranking.forEach((buyer, index) => {
                     const position = index + 1;
                     const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
+                    
+                    // Pegar nome e sobrenome (primeiras 2 palavras)
                     const nameParts = (buyer.buyer_name || 'Anônimo').split(' ');
                     const firstName = nameParts[0] || 'Anônimo';
                     const lastName = nameParts[1] || '';
                     const fullName = lastName ? `${firstName} ${lastName}` : firstName;
-                    const points = Math.round(parseFloat(buyer.total_points || 0)); 
-                    const totalNumbers = parseInt(buyer.total_numbers || 0); 
+                    
+                    const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
+                    const totalNumbers = parseInt(buyer.total_numbers || 0); // Total de cotas
+                    
                     const item = document.createElement('div');
                     item.className = 'ranking-item';
                     item.style.animationDelay = `${index * 0.1}s`;
+                    
+                    // Top 16 com borda roxa, resto com borda cinza apagada
                     if (position > 16) {
                         item.classList.add('ranking-item-inactive');
                     }
+                    
                     item.innerHTML = `
                         ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
                         <div class="ranking-info-box">
@@ -636,11 +741,16 @@
                             <div class="ranking-points-label">pontos</div>
                         </div>
                     `;
+                    
                     container.appendChild(item);
                 });
+
                 console.log('✅ Ranking renderizado com sucesso!');
+
+                // Mostrar ranking
                 document.getElementById('loadingMessage').style.display = 'none';
                 container.style.display = 'block';
+
             } catch (error) {
                 console.error('❌ Erro ao carregar ranking:', error);
                 console.error('Detalhes:', error.message);
@@ -648,6 +758,7 @@
                 showEmpty('Erro ao carregar ranking. Veja o console (F12).');
             }
         }
+
         function showEmpty(message) {
             document.getElementById('loadingMessage').style.display = 'none';
             document.getElementById('rankingContainer').style.display = 'none';
@@ -655,35 +766,50 @@
             emptyState.querySelector('p').textContent = message;
             emptyState.style.display = 'block';
         }
+
+        // Carregar ao abrir página
         loadRanking();
+
+        // Atualizar a cada 10 segundos
         setInterval(loadRanking, 10000);
+
+        // ===== ADMIN PANEL =====
         async function openAdminPanel() {
             const password = prompt('🔐 Digite a senha do administrador:');
             if (!password) return;
+
+            // Verificar senha com hash
             const isValid = await verifyAdminPassword(password);
             if (!isValid) {
                 alert('❌ Senha incorreta!');
                 return;
             }
+
             document.getElementById('adminPanel').classList.add('active');
             loadAdminData();
         }
+
         function closeAdminPanel() {
             document.getElementById('adminPanel').classList.remove('active');
         }
+
         async function loadAdminData() {
             try {
                 const { data, error } = await supabaseClient
                     .from('ranking_points')
                     .select('*')
                     .order('total_points', { ascending: false });
+
                 if (error) throw error;
+
                 const tbody = document.getElementById('adminTableBody');
                 tbody.innerHTML = '';
+
                 if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum jogador no ranking</td></tr>';
                     return;
                 }
+
                 data.forEach((player, index) => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
@@ -707,77 +833,95 @@
                     `;
                     tbody.appendChild(row);
                 });
+
             } catch (error) {
                 console.error('Erro ao carregar admin:', error);
                 alert('Erro ao carregar dados: ' + error.message);
             }
         }
+
         async function savePlayer(id) {
             try {
                 const name = document.getElementById(`name_${id}`).value;
                 const phone = document.getElementById(`phone_${id}`).value;
                 const points = parseFloat(document.getElementById(`points_${id}`).value);
                 const numbers = parseInt(document.getElementById(`numbers_${id}`).value);
+
                 if (!name || !phone || isNaN(points) || isNaN(numbers)) {
                     alert('❌ Preencha todos os campos corretamente!');
                     return;
                 }
+
                 const { error } = await supabaseClient
                     .from('ranking_points')
                     .update({
                         buyer_name: name,
                         buyer_phone: phone,
                         total_points: points,
-                        total_numbers: numbers, 
+                        total_numbers: numbers, // ✅ Agora atualiza cotas também
                         updated_at: new Date().toISOString()
                     })
                     .eq('id', id);
+
                 if (error) throw error;
+
                 alert('✅ Jogador atualizado com sucesso!');
                 loadAdminData();
-                loadRanking(); 
+                loadRanking(); // Atualizar ranking principal
+
             } catch (error) {
                 console.error('Erro ao salvar:', error);
                 alert('❌ Erro ao salvar: ' + error.message);
             }
         }
+
         async function deletePlayer(id, name) {
             if (!confirm(`❌ Tem certeza que deseja deletar "${name}" do ranking?\n\nEsta ação NÃO pode ser desfeita!`)) {
                 return;
             }
+
             try {
                 const { error } = await supabaseClient
                     .from('ranking_points')
                     .delete()
                     .eq('id', id);
+
                 if (error) throw error;
+
                 alert('✅ Jogador deletado com sucesso!');
                 loadAdminData();
-                loadRanking(); 
+                loadRanking(); // Atualizar ranking principal
+
             } catch (error) {
                 console.error('Erro ao deletar:', error);
                 alert('❌ Erro ao deletar: ' + error.message);
             }
         }
+
         async function addPlayer() {
             try {
                 const name = document.getElementById('newName').value;
                 const phone = document.getElementById('newPhone').value;
                 const points = parseFloat(document.getElementById('newPoints').value);
                 const numbers = parseInt(document.getElementById('newNumbers').value) || 0;
+
                 if (!name || !phone || isNaN(points)) {
                     alert('❌ Preencha nome, telefone e pontos!');
                     return;
                 }
+
+                // Verificar se telefone já existe
                 const { data: existing } = await supabaseClient
                     .from('ranking_points')
                     .select('id')
                     .eq('buyer_phone', phone)
                     .single();
+
                 if (existing) {
                     alert('❌ Este telefone já existe no ranking!\n\nEdite o jogador existente ao invés de adicionar um novo.');
                     return;
                 }
+
                 const { error } = await supabaseClient
                     .from('ranking_points')
                     .insert({
@@ -785,18 +929,24 @@
                         buyer_phone: phone,
                         total_points: points,
                         total_purchases: 0,
-                        total_numbers: numbers, 
+                        total_numbers: numbers, // ✅ Incluir cotas
                         created_at: new Date().toISOString(),
                         updated_at: new Date().toISOString()
                     });
+
                 if (error) throw error;
+
                 alert('✅ Jogador adicionado com sucesso!');
+                
+                // Limpar campos
                 document.getElementById('newName').value = '';
                 document.getElementById('newPhone').value = '';
                 document.getElementById('newPoints').value = '';
                 document.getElementById('newNumbers').value = '';
+
                 loadAdminData();
-                loadRanking(); 
+                loadRanking(); // Atualizar ranking principal
+
             } catch (error) {
                 console.error('Erro ao adicionar:', error);
                 alert('❌ Erro ao adicionar: ' + error.message);
