@@ -1,69 +1,54 @@
-// ================================================================
-// CONFIGURAÇÕES CENTRALIZADAS - Borjão Skins
-// ================================================================
-// ⚠️ IMPORTANTE: Este arquivo contém informações sensíveis!
-// NÃO compartilhe este arquivo publicamente
-// ================================================================
-
 const CONFIG = {
-    // ===== SUPABASE =====
     supabase: {
-        url: 'https://yyoyxanloloupwoczkhr.supabase.co',
-        key: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM'
+        url: window.ENV?.SUPABASE_URL || process.env.SUPABASE_URL,
+        key: window.ENV?.SUPABASE_KEY || process.env.SUPABASE_KEY
     },
 
-    // ===== MERCADO PAGO =====
     mercadoPago: {
-        accessToken: 'SEU_ACCESS_TOKEN_AQUI', // ⚠️ CONFIGURE
-        publicKey: 'SUA_PUBLIC_KEY_AQUI'      // ⚠️ CONFIGURE (se usar)
+        accessToken: window.ENV?.MP_ACCESS_TOKEN || process.env.MP_ACCESS_TOKEN,
+        publicKey: window.ENV?.MP_PUBLIC_KEY || process.env.MP_PUBLIC_KEY
     },
 
-    // ===== AUTENTICAÇÃO ADMIN =====
     admin: {
-        username: 'admin',
-        password: 'borjao777',
+        passwordHash: window.ENV?.ADMIN_HASH || process.env.ADMIN_HASH,
         
-        // Múltiplos usuários (opcional)
-        users: [
-            { username: 'admin', password: 'borjao777', role: 'super_admin' },
-            { username: 'borjao', password: 'borjao123', role: 'admin' },
-            { username: 'vendedor', password: 'vendedor123', role: 'vendedor' }
-        ]
+        verifyPassword: async function(password) {
+            const hash = await this.hashPassword(password);
+            return hash === this.passwordHash;
+        },
+        
+        hashPassword: async function(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
     },
 
-    // ===== CONFIGURAÇÕES DO SITE =====
     site: {
         nome: 'Borjão Skins',
         logo: 'images/logodb.png',
-        whatsapp: '5511999999999', // ⚠️ CONFIGURE
-        instagram: '@borjaoskins',  // ⚠️ CONFIGURE
-        email: 'contato@borjaoskins.com' // ⚠️ CONFIGURE
+        whatsapp: window.ENV?.WHATSAPP || process.env.WHATSAPP,
+        instagram: window.ENV?.INSTAGRAM || process.env.INSTAGRAM,
+        email: window.ENV?.EMAIL || process.env.EMAIL
     },
 
-    // ===== CONFIGURAÇÕES DE RIFAS =====
     rifas: {
         maxNumerosPorPessoa: 10,
         precoBase: 5.00,
         totalNumerosPadrao: 100,
-        tempoReserva: 2, // minutos
-        autoRefresh: 10  // segundos
+        tempoReserva: 2,
+        autoRefresh: 10
     },
 
-    // ===== ANALYTICS & TRACKING =====
     analytics: {
         trackClicks: true,
         trackWhatsApp: true,
         trackEstoque: true
-    },
-
-    // ===== NOTIFICAÇÕES =====
-    notifications: {
-        webhookUrl: '', // ⚠️ CONFIGURE (Discord/Slack webhook)
-        emailNotifications: false
     }
 };
 
-// Exportar configuração
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CONFIG;
 }
