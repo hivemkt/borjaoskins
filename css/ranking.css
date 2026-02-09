@@ -1,0 +1,521 @@
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --purple: #9431ce;
+            --purple-glow: rgba(148, 49, 206, 0.4);
+        }
+
+        body {
+            font-family: 'Rajdhani', -apple-system, sans-serif;
+            background: #000;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background animado */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(148, 49, 206, 0.1) 0%, transparent 50%);
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-image: 
+                linear-gradient(rgba(148, 49, 206, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 49, 206, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px var(--purple-glow));
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 48px;
+            color: var(--purple);
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px var(--purple-glow);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.6);
+            letter-spacing: 2px;
+        }
+
+        /* Ranking Styles */
+        .ranking-header {
+            background: linear-gradient(135deg, rgba(148, 49, 206, 0.2), rgba(148, 49, 206, 0.05));
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .ranking-info {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-box {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .info-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--purple);
+            margin-bottom: 5px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Ranking Container */
+        .ranking-container {
+            margin-bottom: 30px;
+        }
+
+        .ranking-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(128, 128, 128, 0.2); /* Padrão cinza */
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease backwards;
+        }
+
+        /* Top 3 - Borda roxa bem destacada */
+        .ranking-item:nth-child(1),
+        .ranking-item:nth-child(2),
+        .ranking-item:nth-child(3) {
+            border-color: var(--purple);
+            box-shadow: 0 0 15px rgba(148, 49, 206, 0.3);
+            background: rgba(148, 49, 206, 0.05);
+        }
+
+        /* Top 1 - MAIOR que os outros */
+        .ranking-item:nth-child(1) {
+            padding: 20px 25px; /* Padding maior */
+            transform: scale(1.05); /* 5% maior */
+            margin-bottom: 20px; /* Mais espaço embaixo */
+            box-shadow: 0 0 25px rgba(148, 49, 206, 0.5); /* Brilho mais forte */
+        }
+
+        .ranking-item:nth-child(1) .ranking-name {
+            font-size: 24px; /* Fonte maior */
+        }
+
+        .ranking-item:nth-child(1) .ranking-points-value {
+            font-size: 32px; /* Pontos maiores */
+        }
+
+        .ranking-item:nth-child(1) .ranking-medal {
+            font-size: 36px; /* Medalha maior */
+        }
+
+        /* 4º ao 16º - Cinza leve */
+        .ranking-item:nth-child(n+4):nth-child(-n+16) {
+            border-color: rgba(148, 49, 206, 0.3);
+            box-shadow: 0 0 8px rgba(148, 49, 206, 0.1);
+        }
+
+        /* 17º em diante - Cinza apagado, "desligado" */
+        .ranking-item-inactive {
+            border-color: rgba(128, 128, 128, 0.15) !important;
+            background: rgba(255, 255, 255, 0.01) !important;
+            opacity: 0.4;
+            box-shadow: none !important;
+        }
+
+        .ranking-item-inactive .ranking-position,
+        .ranking-item-inactive .ranking-name,
+        .ranking-item-inactive .ranking-numbers,
+        .ranking-item-inactive .ranking-points-value,
+        .ranking-item-inactive .ranking-points-label {
+            color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        .ranking-item:hover {
+            background: rgba(148, 49, 206, 0.1);
+            border-color: var(--purple);
+            transform: translateX(5px);
+        }
+
+        .ranking-item:nth-child(1):hover {
+            transform: scale(1.05) translateX(5px); /* Mantém escala ao hover */
+        }
+
+        .ranking-item-inactive:hover {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(128, 128, 128, 0.25) !important;
+            transform: translateX(2px);
+            opacity: 0.6;
+        }
+
+        /* Top 3 especial - APENAS ROXO */
+        .ranking-item:nth-child(1) {
+            background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
+            border-color: var(--purple);
+            animation-delay: 0.1s;
+        }
+
+        .ranking-item:nth-child(2) {
+            background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
+            border-color: var(--purple);
+            animation-delay: 0.2s;
+        }
+
+        .ranking-item:nth-child(3) {
+            background: linear-gradient(135deg, rgba(148, 49, 206, 0.15), rgba(148, 49, 206, 0.05));
+            border-color: var(--purple);
+            animation-delay: 0.3s;
+        }
+
+        .ranking-position {
+            font-family: 'Orbitron', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+            color: var(--purple); /* Todos roxos */
+        }
+
+        .ranking-medal {
+            font-size: 32px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .ranking-info-box {
+            flex: 1;
+        }
+
+        .ranking-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 3px;
+        }
+
+        .ranking-numbers {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .ranking-points {
+            text-align: right;
+        }
+
+        .ranking-points-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--purple);
+        }
+
+        .ranking-points-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Empty state */
+        .ranking-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .ranking-empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+        }
+
+        .back-button {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: all 0.3s ease;
+            border: 2px solid var(--purple);
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--purple-glow);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 32px;
+            }
+
+            .ranking-name {
+                font-size: 16px;
+            }
+
+            .ranking-points-value {
+                font-size: 22px;
+            }
+
+            .info-value {
+                font-size: 24px;
+            }
+        }
+
+        /* Admin Button */
+        .admin-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.1); /* Quase invisível */
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 999;
+            opacity: 0.15; /* Bem transparente */
+        }
+
+        .admin-btn:hover {
+            opacity: 1; /* Aparece ao passar mouse */
+            color: var(--purple);
+            transform: rotate(90deg); /* Gira ao hover */
+            background: rgba(148, 49, 206, 0.1);
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .admin-panel.active {
+            display: block;
+        }
+
+        .admin-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid var(--purple);
+            border-radius: 15px;
+            padding: 30px;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--purple);
+            padding-bottom: 20px;
+        }
+
+        .admin-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 32px;
+            color: var(--purple);
+        }
+
+        .close-btn {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 0, 0, 0.4);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .admin-table th {
+            background: var(--purple);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .admin-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(148, 49, 206, 0.2);
+            color: white;
+        }
+
+        .admin-table tr:hover {
+            background: rgba(148, 49, 206, 0.1);
+        }
+
+        .admin-table input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--purple);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #00cc00, #008800);
+            border: 2px solid #00cc00;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ff0000, #cc0000);
+            border: 2px solid #ff0000;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, var(--purple), #6b1fa0);
+            border: 2px solid var(--purple);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+        .btn-save:hover, .btn-delete:hover, .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .add-form {
+            background: rgba(148, 49, 206, 0.1);
+            border: 2px solid var(--purple);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .add-form input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--purple);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
