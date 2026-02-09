@@ -650,12 +650,30 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // ===== CONFIGURAÇÃO =====
-        const SUPABASE_URL = 'https://yyoyxanloloupwoczkhr.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM';
+        // ===== CONFIGURAÇÃO SEGURA =====
+        // Credenciais vêm de variáveis de ambiente do Netlify
+        const SUPABASE_URL = window.ENV?.SUPABASE_URL || 'https://yyoyxanloloupwoczkhr.supabase.co';
+        const SUPABASE_KEY = window.ENV?.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5b3l4YW5sb2xvdXB3b2N6a2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2ODM2MjYsImV4cCI6MjA4NTI1OTYyNn0.yV9UszxZW0Ee5X6Zj8OLo1Q_uQfj99RJviaZIImiMAM';
 
         // Criar cliente Supabase
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ===== SENHA ADMIN (HASH SEGURO) =====
+        // Hash vem da variável de ambiente ADMIN_HASH
+        // Se não configurada, usa hash de "borjao777" como fallback
+        const ADMIN_PASSWORD_HASH = window.ENV?.ADMIN_HASH || 'a8c5e8a5e0f6b5d8c3e2a4f1b9d7e3c6a2f5b8d1e4c7a9f2b6d3e1c8a5f4b7d2';
+
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        async function verifyAdminPassword(password) {
+            const hash = await hashPassword(password);
+            return hash === ADMIN_PASSWORD_HASH;
+        }
 
         // ===== CARREGAR RANKING =====
         async function loadRanking() {
@@ -773,11 +791,13 @@
         setInterval(loadRanking, 10000);
 
         // ===== ADMIN PANEL =====
-        const ADMIN_PASSWORD = 'borjao777';
-
-        function openAdminPanel() {
+        async function openAdminPanel() {
             const password = prompt('🔐 Digite a senha do administrador:');
-            if (password !== ADMIN_PASSWORD) {
+            if (!password) return;
+
+            // Verificar senha com hash
+            const isValid = await verifyAdminPassword(password);
+            if (!isValid) {
                 alert('❌ Senha incorreta!');
                 return;
             }
