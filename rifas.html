@@ -919,7 +919,8 @@
 
         function openAdminPanel() {
             const password = prompt('🔐 Digite a senha do administrador:');
-            if (password !== ADMIN_PASSWORD_HASH) {
+            const hash = await hashPassword(password);
+            if (hash !== ADMIN_PASSWORD_HASH) {
                 alert('❌ Senha incorreta!');
                 return;
             }
