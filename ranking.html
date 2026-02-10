@@ -141,103 +141,87 @@
             return hash === ADMIN_PASSWORD_HASH;
         }
 
-       async function loadRanking() {
-    console.log('🔵 loadRanking chamada!');
-    
-    try {
-        console.log('📡 Conectando ao Supabase...');
-        console.log('URL:', SUPABASE_URL);
-        console.log('KEY presente:', SUPABASE_KEY ? 'Sim' : 'Não');
-        
-        console.log('📊 Buscando dados de ranking_points...');
-        const { data: ranking, error } = await supabaseClient
-            .from('ranking_points')
-            .select('*')
-            .order('total_points', { ascending: false })
-            .limit(100);
+        async function loadRanking() {
+            console.log('🔵 loadRanking chamada!');
+            
+            try {
+                console.log('📡 Conectando ao Supabase...');
+                console.log('URL:', SUPABASE_URL);
+                console.log('KEY presente:', SUPABASE_KEY ? 'Sim' : 'Não');
+                
+                console.log('📊 Buscando dados de ranking_points...');
+                const { data: ranking, error } = await supabaseClient
+                    .from('ranking_points')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+                    .limit(100); // Top 100
 
-        console.log('📥 Resposta do Supabase:', ranking);
+                console.log('📥 Resposta do Supabase:');
+                console.log('Data:', ranking);
+                console.log('Error:', error);
 
-        if (error) {
-            console.error('❌ Erro do Supabase:', error);
-            throw error;
-        }
+                if (error) {
+                    console.error('❌ Erro do Supabase:', error);
+                    throw error;
+                }
 
-        if (!ranking || ranking.length === 0) {
-            showEmpty('Nenhum comprador ainda. Seja o primeiro!');
-            return;
-        }
+                if (!ranking || ranking.length === 0) {
+                    console.log('⚠️ Nenhum dado retornado');
+                    showEmpty('Nenhum comprador ainda. Seja o primeiro!');
+                    return;
+                }
 
-        const totalCompetitors = ranking.length;
-        const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points || 0), 0);
-        const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
+                console.log(`✅ ${ranking.length} registros encontrados!`);
 
-        document.getElementById('totalCompetitors').textContent = totalCompetitors;
-        document.getElementById('totalNumbers').textContent = totalNumbers;
-        document.getElementById('totalPoints').textContent = Math.round(totalPoints);
+                const totalCompetitors = ranking.length;
+                const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points || 0), 0);
+                const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
 
-        const container = document.getElementById('rankingContainer');
-        container.innerHTML = '';
+                console.log('📊 Estatísticas:', { totalCompetitors, totalPoints, totalNumbers });
 
-        // ===== LÓGICA DE EMPATE =====
-        let lastPoints = null;
-        let position = 0;
+                document.getElementById('totalCompetitors').textContent = totalCompetitors;
+                document.getElementById('totalNumbers').textContent = totalNumbers;
+                document.getElementById('totalPoints').textContent = Math.round(totalPoints);
 
-        ranking.forEach((buyer, index) => {
-            const currentPoints = Math.round(parseFloat(buyer.total_points || 0));
-
-            // Se a pontuação mudou, a posição avança
-            if (currentPoints !== lastPoints) {
-                position = index + 1;
-                lastPoints = currentPoints;
-            }
-
-            const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
-
-            // Nome curto (primeiro + segundo nome)
-            const nameParts = (buyer.buyer_name || 'Anônimo').split(' ');
-            const firstName = nameParts[0] || 'Anônimo';
-            const lastName = nameParts[1] || '';
-            const fullName = lastName ? `${firstName} ${lastName}` : firstName;
-
-            const points = currentPoints;
-            const totalNumbers = parseInt(buyer.total_numbers || 0);
-
-            const item = document.createElement('div');
-            item.className = 'ranking-item';
-            item.style.animationDelay = `${index * 0.1}s`;
-
-            // Top 16 ativo
-            if (position > 16) {
-                item.classList.add('ranking-item-inactive');
-            }
-
-            item.innerHTML = `
-                ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
-                <div class="ranking-info-box">
-                    <div class="ranking-name">${fullName}</div>
-                    <div class="ranking-numbers">${totalNumbers} cota(s)</div>
-                </div>
-                <div class="ranking-points">
-                    <div class="ranking-points-value">${points}</div>
-                    <div class="ranking-points-label">pontos</div>
-                </div>
-            `;
-
-            container.appendChild(item);
-        });
-
-        document.getElementById('loadingMessage').style.display = 'none';
-        container.style.display = 'block';
-
-        console.log('✅ Ranking renderizado com empate por pontos');
-
-    } catch (error) {
-        console.error('❌ Erro ao carregar ranking:', error);
-        showEmpty('Erro ao carregar ranking. Veja o console (F12).');
-    }
-}
-
+                const container = document.getElementById('rankingContainer');
+                container.innerHTML = '';
+                
+                ranking.forEach((buyer, index) => {
+                    const position = index + 1;
+                    const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
+                    
+                    // Pegar nome e sobrenome (primeiras 2 palavras)
+                    const nameParts = (buyer.buyer_name || 'Anônimo').split(' ');
+                    const firstName = nameParts[0] || 'Anônimo';
+                    const lastName = nameParts[1] || '';
+                    const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+                    
+                    const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
+                    const totalNumbers = parseInt(buyer.total_numbers || 0); // Total de cotas
+                    
+                    const item = document.createElement('div');
+                    item.className = 'ranking-item';
+                    item.style.animationDelay = `${index * 0.1}s`;
+                    
+                    // Top 16 com borda roxa, resto com borda cinza apagada
+                    if (position > 16) {
+                        item.classList.add('ranking-item-inactive');
+                    }
+                    
+                    item.innerHTML = `
+                        ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
+                        <div class="ranking-info-box">
+                            <div class="ranking-name">${fullName}</div>
+                            <div class="ranking-numbers">${totalNumbers} cota(s)</div>
+                        </div>
+                        <div class="ranking-points">
+                            <div class="ranking-points-value">${points}</div>
+                            <div class="ranking-points-label">pontos</div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(item);
+                });
 
                 console.log('✅ Ranking renderizado com sucesso!');
 
