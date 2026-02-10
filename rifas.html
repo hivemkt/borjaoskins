@@ -75,6 +75,43 @@
         </div>
     </div>
     <div class="admin-trigger" onclick="openAdminPanel()">⚙️</div>
+
+    <div class="modal" id="confirmationModal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; text-align: center;">
+            <button class="modal-close" onclick="closeConfirmationModal()">×</button>
+            
+            <div style="font-size: 80px; margin-bottom: 20px;">🎉</div>
+            
+            <h2 style="font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: #00ff88; margin-bottom: 10px; letter-spacing: 2px;">
+                VOCÊ ESTÁ PARTICIPANDO!
+            </h2>
+            
+            <p style="font-size: 18px; color: rgba(255,255,255,0.8); margin-bottom: 30px;">
+                Obrigado por participar! Seu(s) número(s):
+            </p>
+            
+            <div id="confirmationNumbers" style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 40px;">
+            </div>
+            
+            <div style="background: rgba(148, 49, 206, 0.1); border: 2px solid var(--purple); border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+                <p style="color: var(--purple); font-weight: 600; margin-bottom: 10px;">
+                    📸 LEMBRE-SE DE TIRAR UM PRINT DA TELA
+                </p>
+                <p style="font-size: 14px; color: rgba(255,255,255,0.7);">
+                    Caso queira lembrar do seu número mais tarde!
+                </p>
+            </div>
+            
+            <button onclick="proceedToPayment()" style="width: 100%; background: linear-gradient(135deg, var(--purple), #6b1fa0); border: none; color: white; padding: 18px; border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 18px; margin-bottom: 15px;">
+                💳 Continuar para Pagamento PIX
+            </button>
+            
+            <button onclick="closeConfirmationModal()" style="width: 100%; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 15px; border-radius: 12px; cursor: pointer; font-weight: 600;">
+                ✕ Fechar
+            </button>
+        </div>
+    </div>
+
     <div class="modal" id="pixModal" style="display: none;">
         <div class="modal-content" style="max-width: 500px; text-align: center;">
             <button class="modal-close" onclick="closePixModal()">×</button>
@@ -105,6 +142,7 @@
             </div>
         </div>
     </div>
+
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
             <div class="admin-header">
