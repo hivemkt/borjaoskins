@@ -6,6 +6,7 @@
     const ADMIN_PASSWORD_HASH = window.ENV.ADMIN_HASH;
     
     delete window.ENV;
+    Object.freeze(window);
 
     let supabaseClient = null;
     try {
