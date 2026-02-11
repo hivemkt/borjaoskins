@@ -78,7 +78,7 @@ body {
 .main-buttons {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     margin-bottom: 15px;
 }
 
@@ -108,19 +108,19 @@ body {
 .social-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
 }
 
 .btn-social {
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(148, 49, 206, 0.3);
-    border-radius: 12px;
-    padding: 12px 8px;
+    border-radius: 10px;
+    padding: 10px 6px;
     color: white;
     text-decoration: none;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
     text-align: center;
     transition: all 0.3s;
@@ -128,7 +128,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 4px;
     backdrop-filter: blur(10px);
 }
 
@@ -139,8 +139,8 @@ body {
 }
 
 .social-icon {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
     object-fit: contain;
 }
 
@@ -162,7 +162,7 @@ body {
     }
 
     .main-buttons {
-        gap: 8px;
+        gap: 5px;
         margin-bottom: 12px;
     }
 
@@ -170,14 +170,18 @@ body {
         height: 75px;
     }
 
+    .social-grid {
+        gap: 5px;
+    }
+
     .btn-social {
-        padding: 10px 6px;
-        font-size: 12px;
+        padding: 8px 5px;
+        font-size: 10px;
     }
     
     .social-icon {
-        width: 24px;
-        height: 24px;
+        width: 18px;
+        height: 18px;
     }
 }
 
@@ -189,7 +193,7 @@ body {
     }
 
     .main-buttons {
-        gap: 8px;
+        gap: 5px;
         margin-bottom: 10px;
     }
 
@@ -198,17 +202,17 @@ body {
     }
 
     .social-grid {
-        gap: 6px;
+        gap: 5px;
     }
 
     .btn-social {
-        padding: 10px 6px;
-        font-size: 11px;
+        padding: 8px 5px;
+        font-size: 10px;
     }
     
     .social-icon {
-        width: 22px;
-        height: 22px;
+        width: 18px;
+        height: 18px;
     }
 }
 
@@ -225,7 +229,7 @@ body {
     }
 
     .main-buttons {
-        gap: 10px;
+        gap: 6px;
         margin-bottom: 15px;
     }
 
@@ -234,17 +238,17 @@ body {
     }
 
     .social-grid {
-        gap: 10px;
+        gap: 8px;
     }
 
     .btn-social {
-        padding: 15px 10px;
-        font-size: 14px;
+        padding: 12px 8px;
+        font-size: 12px;
     }
 
     .social-icon {
-        width: 32px;
-        height: 32px;
+        width: 26px;
+        height: 26px;
     }
 }
 
@@ -260,7 +264,7 @@ body {
     }
 
     .main-buttons {
-        gap: 12px;
+        gap: 8px;
         margin-bottom: 18px;
     }
 
@@ -269,16 +273,16 @@ body {
     }
 
     .social-grid {
-        gap: 12px;
+        gap: 10px;
     }
 
     .btn-social {
-        padding: 16px 12px;
-        font-size: 15px;
+        padding: 14px 10px;
+        font-size: 13px;
     }
 
     .social-icon {
-        width: 35px;
-        height: 35px;
+        width: 28px;
+        height: 28px;
     }
 }
