@@ -2,100 +2,73 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Borjão Skins - CS Premium</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borjão Skins - Links</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/linktree.css">
 </head>
 <body>
     <div class="bg-animation"></div>
-    <div class="grid-overlay"></div>
-
-    <div class="container">
-        <div class="logo-section">
-            <div class="logo">
-                <img src="images/logodb.png" alt="Logo Borjão Skins">
-            </div>
-        </div>
-
-       <div class="links">
-    <div class="link-item">
-        <a href="embreve.html" class="link-btn">
-            <video class="btn-image" autoplay loop muted playsinline>
-                <source src="images/botao1.webm" type="video/webm">
-            </video>
-        </a>
-    </div>
-
-    <div class="link-item">
-        <a href="embreve.html" class="link-btn">
-            <video class="btn-image" autoplay loop muted playsinline>
-                <source src="images/botao2.webm" type="video/webm">
-            </video>
-        </a>
-    </div>
-
-    <div class="link-item">
-        <a href="embreve.html" class="link-btn">
-            <video class="btn-image" autoplay loop muted playsinline>
-                <source src="images/botao3.webm" type="video/webm">
-            </video>
-        </a>
-    </div>
-
-    <div class="link-item">
-        <a href="https://instagram.com/borjaoskins" class="link-btn" target="_blank">
-            <video class="btn-image" autoplay loop muted playsinline>
-                <source src="images/botao4.webm" type="video/webm">
-            </video>
-        </a>
-    </div>
     
-    <div class="link-item">
-        <a href="https://discord.gg/gnbyKqEu" class="link-btn link-discord" target="_blank">
-            <video class="btn-image" autoplay loop muted playsinline>
-                <source src="images/botao5.webm" type="video/webm">
-            </video>
-        </a>
-    </div>
-</div>
+    <div class="container">
+        <div class="logo">
+            <img src="images/logodb.png" alt="Borjão Skins">
+        </div>
 
-        <div class="footer">
-            Desenvolvido por hive.mkt
+        <div class="main-buttons">
+            <a href="https://seusite.com/estoque" class="btn-main">
+                <video class="btn-video" autoplay loop muted playsinline>
+                    <source src="videos/estoque.webm" type="video/webm">
+                </video>
+                <span class="btn-content">
+                    <span class="icon">🎮</span>
+                    <span>Skins em Estoque</span>
+                </span>
+            </a>
+            <a href="rifas.html" class="btn-main">
+                <video class="btn-video" autoplay loop muted playsinline>
+                    <source src="videos/rifas.webm" type="video/webm">
+                </video>
+                <span class="btn-content">
+                    <span class="icon">🎰</span>
+                    <span>Rifas</span>
+                </span>
+            </a>
+            <a href="https://seusite.com/vender" class="btn-main">
+                <video class="btn-video" autoplay loop muted playsinline>
+                    <source src="videos/vender.webm" type="video/webm">
+                </video>
+                <span class="btn-content">
+                    <span class="icon">💎</span>
+                    <span>Vender ou Melhorar Skins</span>
+                </span>
+            </a>
+        </div>
+
+        <div class="social-grid">
+            <a href="https://chat.whatsapp.com/SEULINK" class="btn-social">
+                <img src="images/whatsapp-comunidade.png" alt="WhatsApp" class="social-icon">
+                <span>Comunidade<br>WhatsApp</span>
+            </a>
+            <a href="https://instagram.com/borjaoskins" class="btn-social">
+                <img src="images/instagram.png" alt="Instagram" class="social-icon">
+                <span>Instagram</span>
+            </a>
+            <a href="https://wa.me/5511999999999" class="btn-social">
+                <img src="images/whatsapp-dm.png" alt="WhatsApp DM" class="social-icon">
+                <span>DM<br>WhatsApp</span>
+            </a>
+            <a href="https://discord.gg/SEULINK" class="btn-social">
+                <img src="images/discord.png" alt="Discord" class="social-icon">
+                <span>Discord</span>
+            </a>
+            <a href="https://steamcommunity.com/id/SEUID" class="btn-social btn-center">
+                <img src="images/steam.png" alt="Steam" class="social-icon">
+                <span>Steam</span>
+            </a>
         </div>
     </div>
-
-    <script>
-        // Create floating particles
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * window.innerWidth + 'px';
-            particle.style.animationDelay = Math.random() * 8 + 's';
-            particle.style.animationDuration = (Math.random() * 4 + 6) + 's';
-            document.body.appendChild(particle);
-
-            setTimeout(() => {
-                particle.remove();
-            }, 10000);
-        }
-
-        // Generate particles periodically (less on mobile)
-        const isMobile = window.innerWidth <= 640;
-        const particleInterval = isMobile ? 2000 : 500;
-        setInterval(createParticle, particleInterval);
-
-        // Add hover sound effect simulation (visual feedback)
-        document.querySelectorAll('.link-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            });
-        });
-    </script>
 </body>
 </html>
