@@ -15,9 +15,8 @@
     <div class="grid-overlay"></div>
 
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <a href="index.html" style="text-decoration: none;">
+            <a href="rifas-menu.html" style="text-decoration: none;">
                 <div class="logo">
                     <img src="images/logodb.png" alt="Logo Borjão Skins">
                 </div>
@@ -26,7 +25,6 @@
             <p class="subtitle">RANKING GERAL DE TODOS OS TEMPOS</p>
         </div>
 
-        <!-- Ranking Header -->
         <div class="ranking-header">
             <div class="ranking-info">
                 <div class="info-box">
@@ -44,34 +42,27 @@
             </div>
         </div>
 
-        <!-- Loading -->
         <div id="loadingMessage" class="loading">
             ⏳ Carregando ranking...
         </div>
 
-        <!-- Ranking -->
-        <div class="ranking-container" id="rankingContainer" style="display: none;">
-            <!-- Preenchido via JavaScript -->
-        </div>
+        <div class="ranking-container" id="rankingContainer" style="display: none;"></div>
 
-        <!-- Empty State -->
         <div id="emptyState" class="ranking-empty" style="display: none;">
             <div class="ranking-empty-icon">📊</div>
             <h3 style="margin-bottom: 10px;">Nenhum comprador ainda</h3>
             <p>Seja o primeiro a aparecer no ranking!</p>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
             <p style="margin-bottom: 15px;">⚡ Atualizado em tempo real</p>
-            <a href="rifas.html" class="back-button">← Voltar para a Rifa</a>
+            <a href="rifas-menu.html" class="back-button">← Voltar</a>
             <p style="margin-top: 20px; font-size: 11px;">
                 © 2024 Borjão Skins - Todos os direitos reservados
             </p>
         </div>
     </div>
 
-    <!-- Admin Panel -->
     <div class="admin-panel" id="adminPanel">
         <div class="admin-container">
             <div class="admin-header">
@@ -79,7 +70,6 @@
                 <button class="close-btn" onclick="closeAdminPanel()">✕ Fechar</button>
             </div>
 
-            <!-- Add New Player -->
             <div class="add-form">
                 <h3 style="color: var(--purple); margin-bottom: 15px;">➕ Adicionar Novo Jogador</h3>
                 <input type="text" id="newName" placeholder="Nome completo" style="width: 200px;">
@@ -89,7 +79,6 @@
                 <button class="btn-add" onclick="addPlayer()">Adicionar</button>
             </div>
 
-            <!-- Players Table -->
             <div style="overflow-x: auto;">
                 <table class="admin-table">
                     <thead>
@@ -112,324 +101,10 @@
         </div>
     </div>
 
-    <!-- Botão Admin Discreto (engrenagem invisível) -->
-    <button class="admin-btn" onclick="openAdminPanel()" title="Admin">
-        ⚙️
-    </button>
+    <button class="admin-btn" onclick="openAdminPanel()" title="Admin">⚙️</button>
 
     <script src="/.netlify/functions/env"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script>
-        const SUPABASE_URL = window.ENV.SUPABASE_URL;
-        const SUPABASE_KEY = window.ENV.SUPABASE_KEY;
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        const ADMIN_PASSWORD_HASH = window.ENV.ADMIN_HASH;
-
-        async function hashPassword(password) {
-            const msgBuffer = new TextEncoder().encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-
-        async function verifyAdminPassword(password) {
-            const hash = await hashPassword(password);
-            return hash === ADMIN_PASSWORD_HASH;
-        }
-
-        async function loadRanking() {
-            console.log('🔵 loadRanking chamada!');
-            
-            try {
-                console.log('📡 Conectando ao Supabase...');
-                console.log('URL:', SUPABASE_URL);
-                console.log('KEY presente:', SUPABASE_KEY ? 'Sim' : 'Não');
-                
-                console.log('📊 Buscando dados de ranking_points...');
-                const { data: ranking, error } = await supabaseClient
-                    .from('ranking_points')
-                    .select('*')
-                    .order('total_points', { ascending: false })
-                    .limit(100); // Top 100
-
-                console.log('📥 Resposta do Supabase:');
-                console.log('Data:', ranking);
-                console.log('Error:', error);
-
-                if (error) {
-                    console.error('❌ Erro do Supabase:', error);
-                    throw error;
-                }
-
-                if (!ranking || ranking.length === 0) {
-                    console.log('⚠️ Nenhum dado retornado');
-                    showEmpty('Nenhum comprador ainda. Seja o primeiro!');
-                    return;
-                }
-
-                console.log(`✅ ${ranking.length} registros encontrados!`);
-
-                const totalCompetitors = ranking.length;
-                const totalPoints = ranking.reduce((sum, r) => sum + parseFloat(r.total_points || 0), 0);
-                const totalNumbers = ranking.reduce((sum, r) => sum + parseInt(r.total_numbers || 0), 0);
-
-                console.log('📊 Estatísticas:', { totalCompetitors, totalPoints, totalNumbers });
-
-                document.getElementById('totalCompetitors').textContent = totalCompetitors;
-                document.getElementById('totalNumbers').textContent = totalNumbers;
-                document.getElementById('totalPoints').textContent = Math.round(totalPoints);
-
-                const container = document.getElementById('rankingContainer');
-                container.innerHTML = '';
-                
-                ranking.forEach((buyer, index) => {
-                    const position = index + 1;
-                    const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
-                    
-                    // Pegar nome e sobrenome (primeiras 2 palavras)
-                    const nameParts = (buyer.buyer_name || 'Anônimo').split(' ');
-                    const firstName = nameParts[0] || 'Anônimo';
-                    const lastName = nameParts[1] || '';
-                    const fullName = lastName ? `${firstName} ${lastName}` : firstName;
-                    
-                    const points = Math.round(parseFloat(buyer.total_points || 0)); // Sem decimais
-                    const totalNumbers = parseInt(buyer.total_numbers || 0); // Total de cotas
-                    
-                    const item = document.createElement('div');
-                    item.className = 'ranking-item';
-                    item.style.animationDelay = `${index * 0.1}s`;
-                    
-                    // Top 16 com borda roxa, resto com borda cinza apagada
-                    if (position > 16) {
-                        item.classList.add('ranking-item-inactive');
-                    }
-                    
-                    item.innerHTML = `
-                        ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
-                        <div class="ranking-info-box">
-                            <div class="ranking-name">${fullName}</div>
-                            <div class="ranking-numbers">${totalNumbers} cota(s)</div>
-                        </div>
-                        <div class="ranking-points">
-                            <div class="ranking-points-value">${points}</div>
-                            <div class="ranking-points-label">pontos</div>
-                        </div>
-                    `;
-                    
-                    container.appendChild(item);
-                });
-
-                console.log('✅ Ranking renderizado com sucesso!');
-
-                // Mostrar ranking
-                document.getElementById('loadingMessage').style.display = 'none';
-                container.style.display = 'block';
-
-            } catch (error) {
-                console.error('❌ Erro ao carregar ranking:', error);
-                console.error('Detalhes:', error.message);
-                console.error('Stack:', error.stack);
-                showEmpty('Erro ao carregar ranking. Veja o console (F12).');
-            }
-        }
-
-        function showEmpty(message) {
-            document.getElementById('loadingMessage').style.display = 'none';
-            document.getElementById('rankingContainer').style.display = 'none';
-            const emptyState = document.getElementById('emptyState');
-            emptyState.querySelector('p').textContent = message;
-            emptyState.style.display = 'block';
-        }
-
-        // Carregar ao abrir página
-        loadRanking();
-
-        // Atualizar a cada 10 segundos
-        setInterval(loadRanking, 10000);
-
-        // ===== ADMIN PANEL =====
-        async function openAdminPanel() {
-            const password = prompt('🔐 Digite a senha do administrador:');
-            if (!password) return;
-
-            // Verificar senha com hash
-            const isValid = await verifyAdminPassword(password);
-            if (!isValid) {
-                alert('❌ Senha incorreta!');
-                return;
-            }
-
-            document.getElementById('adminPanel').classList.add('active');
-            loadAdminData();
-        }
-
-        function closeAdminPanel() {
-            document.getElementById('adminPanel').classList.remove('active');
-        }
-
-        async function loadAdminData() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('ranking_points')
-                    .select('*')
-                    .order('total_points', { ascending: false });
-
-                if (error) throw error;
-
-                const tbody = document.getElementById('adminTableBody');
-                tbody.innerHTML = '';
-
-                if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Nenhum jogador no ranking</td></tr>';
-                    return;
-                }
-
-                data.forEach((player, index) => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${index + 1}º</td>
-                        <td>
-                            <input type="text" value="${player.buyer_name}" id="name_${player.id}" />
-                        </td>
-                        <td>
-                            <input type="text" value="${player.buyer_phone}" id="phone_${player.id}" />
-                        </td>
-                        <td>
-                            <input type="number" value="${Math.round(player.total_points)}" id="points_${player.id}" style="width: 80px;" />
-                        </td>
-                        <td>
-                            <input type="number" value="${player.total_numbers || 0}" id="numbers_${player.id}" style="width: 80px;" />
-                        </td>
-                        <td>
-                            <button class="btn-save" onclick="savePlayer('${player.id}')">💾 Salvar</button>
-                            <button class="btn-delete" onclick="deletePlayer('${player.id}', '${player.buyer_name}')">🗑️ Deletar</button>
-                        </td>
-                    `;
-                    tbody.appendChild(row);
-                });
-
-            } catch (error) {
-                console.error('Erro ao carregar admin:', error);
-                alert('Erro ao carregar dados: ' + error.message);
-            }
-        }
-
-        async function savePlayer(id) {
-            try {
-                const name = document.getElementById(`name_${id}`).value;
-                const phone = document.getElementById(`phone_${id}`).value;
-                const points = parseFloat(document.getElementById(`points_${id}`).value);
-                const numbers = parseInt(document.getElementById(`numbers_${id}`).value);
-
-                if (!name || !phone || isNaN(points) || isNaN(numbers)) {
-                    alert('❌ Preencha todos os campos corretamente!');
-                    return;
-                }
-
-                const { error } = await supabaseClient
-                    .from('ranking_points')
-                    .update({
-                        buyer_name: name,
-                        buyer_phone: phone,
-                        total_points: points,
-                        total_numbers: numbers, // ✅ Agora atualiza cotas também
-                        updated_at: new Date().toISOString()
-                    })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                alert('✅ Jogador atualizado com sucesso!');
-                loadAdminData();
-                loadRanking(); // Atualizar ranking principal
-
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                alert('❌ Erro ao salvar: ' + error.message);
-            }
-        }
-
-        async function deletePlayer(id, name) {
-            if (!confirm(`❌ Tem certeza que deseja deletar "${name}" do ranking?\n\nEsta ação NÃO pode ser desfeita!`)) {
-                return;
-            }
-
-            try {
-                const { error } = await supabaseClient
-                    .from('ranking_points')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                alert('✅ Jogador deletado com sucesso!');
-                loadAdminData();
-                loadRanking(); // Atualizar ranking principal
-
-            } catch (error) {
-                console.error('Erro ao deletar:', error);
-                alert('❌ Erro ao deletar: ' + error.message);
-            }
-        }
-
-        async function addPlayer() {
-            try {
-                const name = document.getElementById('newName').value;
-                const phone = document.getElementById('newPhone').value;
-                const points = parseFloat(document.getElementById('newPoints').value);
-                const numbers = parseInt(document.getElementById('newNumbers').value) || 0;
-
-                if (!name || !phone || isNaN(points)) {
-                    alert('❌ Preencha nome, telefone e pontos!');
-                    return;
-                }
-
-                // Verificar se telefone já existe
-                const { data: existing } = await supabaseClient
-                    .from('ranking_points')
-                    .select('id')
-                    .eq('buyer_phone', phone)
-                    .single();
-
-                if (existing) {
-                    alert('❌ Este telefone já existe no ranking!\n\nEdite o jogador existente ao invés de adicionar um novo.');
-                    return;
-                }
-
-                const { error } = await supabaseClient
-                    .from('ranking_points')
-                    .insert({
-                        buyer_name: name,
-                        buyer_phone: phone,
-                        total_points: points,
-                        total_purchases: 0,
-                        total_numbers: numbers, // ✅ Incluir cotas
-                        created_at: new Date().toISOString(),
-                        updated_at: new Date().toISOString()
-                    });
-
-                if (error) throw error;
-
-                alert('✅ Jogador adicionado com sucesso!');
-                
-                // Limpar campos
-                document.getElementById('newName').value = '';
-                document.getElementById('newPhone').value = '';
-                document.getElementById('newPoints').value = '';
-                document.getElementById('newNumbers').value = '';
-
-                loadAdminData();
-                loadRanking(); // Atualizar ranking principal
-
-            } catch (error) {
-                console.error('Erro ao adicionar:', error);
-                alert('❌ Erro ao adicionar: ' + error.message);
-            }
-        }
-    </script>
+    <script src="js/ranking.js"></script>
 </body>
 </html>
