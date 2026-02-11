@@ -1,0 +1,121 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+a {
+    outline: none;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+:root {
+    --purple: #9431ce;
+    --black: #000000;
+    --purple-glow: rgba(148, 49, 206, 0.4);
+}
+
+body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--black);
+    color: white;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.bg-animation {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
+
+.bg-animation::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background:
+        radial-gradient(circle at 20% 50%, var(--purple-glow) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, var(--purple-glow) 0%, transparent 50%);
+    animation: bgRotate 20s linear infinite;
+}
+
+@keyframes bgRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.container {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 520px;
+    height: 100%;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform-origin: top center;
+}
+
+.logo {
+    width: 250px;
+    margin-bottom: 15px;
+}
+
+.logo img {
+    width: 100%;
+    display: block;
+}
+
+.main-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-main {
+    width: 100%;
+    line-height: 0;
+    transition: all 0.3s;
+    display: block;
+}
+
+.btn-main:hover {
+    transform: translateY(-3px);
+    filter: drop-shadow(0 8px 25px var(--purple-glow));
+}
+
+.btn-media {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+@media (max-height: 800px) {
+    .container { transform: scale(0.95); }
+    .logo { width: 220px; }
+}
+
+@media (max-height: 700px) {
+    .container { transform: scale(0.9); }
+    .logo { width: 200px; }
+}
+
+@media (max-height: 620px) {
+    .container { transform: scale(0.85); }
+    .logo { width: 180px; }
+}
+
+@media (max-height: 560px) {
+    .container { transform: scale(0.8); }
+    .logo { width: 160px; }
+}
