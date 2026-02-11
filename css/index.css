@@ -13,13 +13,10 @@ border: none;
 
 /* Reset global de video */
 video {
-display: block;
-width: 100%;
-height: 100%;
-background: transparent !important;
-border: none !important;
-outline: none !important;
-object-fit: cover;
+    display: block;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
 }
 
 /* Variáveis */
