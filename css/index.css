@@ -63,9 +63,9 @@ body {
 }
 
 .logo {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 10px;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 8px;
     filter: drop-shadow(0 10px 30px var(--purple-glow));
 }
 
@@ -78,29 +78,36 @@ body {
 .main-buttons {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 15px;
+    gap: 5px;
+    margin-bottom: 12px;
 }
 
 .btn-main {
     width: 100%;
-    height: 90px;
+    height: 60px;
     text-decoration: none;
     transition: all 0.3s;
     display: block;
     position: relative;
     overflow: hidden;
-    border-radius: 15px;
+    border-radius: 12px;
+    background: transparent;
 }
 
 .btn-main:hover {
-    transform: translateY(-3px);
-    filter: drop-shadow(0 8px 30px var(--purple-glow));
+    transform: translateY(-2px);
+    filter: drop-shadow(0 5px 20px var(--purple-glow));
 }
 
 .btn-video {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
     object-fit: cover;
     display: block;
 }
@@ -108,19 +115,19 @@ body {
 .social-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-bottom: 6px;
+    gap: 5px;
+    margin-bottom: 5px;
 }
 
 .btn-social {
-    background: rgba(255, 255, 255, 0.05);
-    border: 2px solid rgba(148, 49, 206, 0.3);
+    background: transparent;
+    border: none;
     border-radius: 10px;
-    padding: 10px 6px;
+    padding: 8px 5px;
     color: white;
     text-decoration: none;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-align: center;
     transition: all 0.3s;
@@ -128,19 +135,17 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    backdrop-filter: blur(10px);
+    gap: 3px;
 }
 
 .btn-social:hover {
-    background: rgba(148, 49, 206, 0.2);
-    border-color: var(--purple);
     transform: translateY(-2px);
+    filter: drop-shadow(0 3px 10px var(--purple-glow));
 }
 
 .social-icon {
-    width: 22px;
-    height: 22px;
+    width: 18px;
+    height: 18px;
     object-fit: contain;
 }
 
@@ -158,43 +163,78 @@ body {
     .logo {
         width: 80px;
         height: 80px;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .main-buttons {
-        gap: 5px;
-        margin-bottom: 12px;
+        gap: 4px;
+        margin-bottom: 10px;
     }
 
     .btn-main {
-        height: 75px;
+        height: 55px;
     }
 
     .social-grid {
-        gap: 5px;
+        gap: 4px;
     }
 
     .btn-social {
-        padding: 8px 5px;
-        font-size: 10px;
+        padding: 7px 4px;
+        font-size: 9px;
     }
     
     .social-icon {
-        width: 18px;
-        height: 18px;
+        width: 16px;
+        height: 16px;
     }
 }
 
 @media (max-height: 700px) {
     .logo {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 8px;
+        width: 75px;
+        height: 75px;
+        margin-bottom: 6px;
     }
 
     .main-buttons {
-        gap: 5px;
+        gap: 4px;
+        margin-bottom: 8px;
+    }
+
+    .btn-main {
+        height: 50px;
+    }
+
+    .social-grid {
+        gap: 4px;
+    }
+
+    .btn-social {
+        padding: 6px 4px;
+        font-size: 9px;
+    }
+    
+    .social-icon {
+        width: 15px;
+        height: 15px;
+    }
+}
+
+@media (min-width: 768px) {
+    .container {
+        max-width: 480px;
+    }
+
+    .logo {
+        width: 100px;
+        height: 100px;
         margin-bottom: 10px;
+    }
+
+    .main-buttons {
+        gap: 6px;
+        margin-bottom: 12px;
     }
 
     .btn-main {
@@ -202,39 +242,38 @@ body {
     }
 
     .social-grid {
-        gap: 5px;
+        gap: 6px;
     }
 
     .btn-social {
-        padding: 8px 5px;
-        font-size: 10px;
+        padding: 10px 6px;
+        font-size: 11px;
     }
-    
+
     .social-icon {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
     }
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
     .container {
         max-width: 500px;
-        padding: 20px;
     }
 
     .logo {
-        width: 120px;
-        height: 120px;
+        width: 110px;
+        height: 110px;
         margin-bottom: 12px;
     }
 
     .main-buttons {
-        gap: 6px;
+        gap: 8px;
         margin-bottom: 15px;
     }
 
     .btn-main {
-        height: 110px;
+        height: 80px;
     }
 
     .social-grid {
@@ -247,42 +286,7 @@ body {
     }
 
     .social-icon {
-        width: 26px;
-        height: 26px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .container {
-        max-width: 520px;
-    }
-
-    .logo {
-        width: 130px;
-        height: 130px;
-        margin-bottom: 15px;
-    }
-
-    .main-buttons {
-        gap: 8px;
-        margin-bottom: 18px;
-    }
-
-    .btn-main {
-        height: 120px;
-    }
-
-    .social-grid {
-        gap: 10px;
-    }
-
-    .btn-social {
-        padding: 14px 10px;
-        font-size: 13px;
-    }
-
-    .social-icon {
-        width: 28px;
-        height: 28px;
+        width: 22px;
+        height: 22px;
     }
 }
