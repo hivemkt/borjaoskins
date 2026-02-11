@@ -54,18 +54,19 @@ body {
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 420px;
-    padding: 15px;
+    max-width: 500px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    align-items: center;
     justify-content: center;
+    min-height: 100vh;
 }
 
 .logo {
-    width: 90px;
-    height: 90px;
-    margin: 0 auto 8px;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
     filter: drop-shadow(0 10px 30px var(--purple-glow));
 }
 
@@ -76,48 +77,52 @@ body {
 }
 
 .main-buttons {
+    width: 100%;
+    max-width: 400px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    margin-bottom: 12px;
+    gap: 15px;
+    margin-bottom: 25px;
 }
 
 .btn-main {
     width: 100%;
-    height: 60px;
     text-decoration: none;
     transition: all 0.3s;
     display: block;
     overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .btn-main:hover {
-    transform: translateY(-2px);
-    filter: drop-shadow(0 5px 20px var(--purple-glow));
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px var(--purple-glow);
 }
 
 .btn-video {
     width: 100%;
-    height: 100%;
-    object-fit: fill;
+    height: auto;
     display: block;
 }
 
 .social-grid {
+    width: 100%;
+    max-width: 400px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 5px;
-    margin-bottom: 5px;
+    gap: 12px;
 }
 
 .btn-social {
-    background: transparent;
-    border: none;
-    padding: 8px 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(148, 49, 206, 0.3);
+    border-radius: 12px;
+    padding: 15px 10px;
     color: white;
     text-decoration: none;
     font-family: 'Rajdhani', sans-serif;
-    font-size: 10px;
+    font-size: 13px;
     font-weight: 600;
     text-align: center;
     transition: all 0.3s;
@@ -125,149 +130,46 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 3px;
+    gap: 8px;
+    backdrop-filter: blur(10px);
 }
 
 .btn-social:hover {
+    background: rgba(148, 49, 206, 0.2);
+    border-color: var(--purple);
     transform: translateY(-2px);
-    filter: drop-shadow(0 3px 10px var(--purple-glow));
 }
 
 .social-icon {
-    width: 18px;
-    height: 18px;
+    width: 30px;
+    height: 30px;
     object-fit: contain;
 }
 
 .btn-center {
     grid-column: 1 / -1;
-    width: 50%;
+    max-width: 180px;
     margin: 0 auto;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
     .container {
-        padding: 12px;
-    }
-
-    .logo {
-        width: 80px;
-        height: 80px;
-        margin-bottom: 6px;
-    }
-
-    .main-buttons {
-        gap: 4px;
-        margin-bottom: 10px;
-    }
-
-    .btn-main {
-        height: 55px;
-    }
-
-    .social-grid {
-        gap: 4px;
-    }
-
-    .btn-social {
-        padding: 7px 4px;
-        font-size: 9px;
-    }
-    
-    .social-icon {
-        width: 16px;
-        height: 16px;
-    }
-}
-
-@media (max-height: 700px) {
-    .logo {
-        width: 75px;
-        height: 75px;
-        margin-bottom: 6px;
-    }
-
-    .main-buttons {
-        gap: 4px;
-        margin-bottom: 8px;
-    }
-
-    .btn-main {
-        height: 50px;
-    }
-
-    .social-grid {
-        gap: 4px;
-    }
-
-    .btn-social {
-        padding: 6px 4px;
-        font-size: 9px;
-    }
-    
-    .social-icon {
-        width: 15px;
-        height: 15px;
-    }
-}
-
-@media (min-width: 768px) {
-    .container {
-        max-width: 480px;
+        padding: 15px;
     }
 
     .logo {
         width: 100px;
         height: 100px;
-        margin-bottom: 10px;
-    }
-
-    .main-buttons {
-        gap: 6px;
-        margin-bottom: 12px;
-    }
-
-    .btn-main {
-        height: 70px;
-    }
-
-    .social-grid {
-        gap: 6px;
-    }
-
-    .btn-social {
-        padding: 10px 6px;
-        font-size: 11px;
-    }
-
-    .social-icon {
-        width: 20px;
-        height: 20px;
-    }
-}
-
-@media (min-width: 1024px) {
-    .container {
-        max-width: 500px;
-    }
-
-    .logo {
-        width: 110px;
-        height: 110px;
-        margin-bottom: 12px;
-    }
-
-    .main-buttons {
-        gap: 8px;
         margin-bottom: 15px;
     }
 
-    .btn-main {
-        height: 80px;
+    .main-buttons {
+        gap: 12px;
+        margin-bottom: 20px;
     }
 
     .social-grid {
-        gap: 8px;
+        gap: 10px;
     }
 
     .btn-social {
@@ -276,7 +178,34 @@ body {
     }
 
     .social-icon {
-        width: 22px;
-        height: 22px;
+        width: 26px;
+        height: 26px;
+    }
+}
+
+@media (max-height: 700px) {
+    .logo {
+        width: 90px;
+        height: 90px;
+        margin-bottom: 12px;
+    }
+
+    .main-buttons {
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .social-grid {
+        gap: 8px;
+    }
+
+    .btn-social {
+        padding: 10px 6px;
+        font-size: 11px;
+    }
+
+    .social-icon {
+        width: 24px;
+        height: 24px;
     }
 }
