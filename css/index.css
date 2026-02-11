@@ -4,7 +4,6 @@
     box-sizing: border-box;
 }
 
-/* Remove highlight e borda de toque no mobile */
 a, button {
     outline: none;
     border: none;
