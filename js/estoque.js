@@ -414,3 +414,55 @@ document.getElementById('itemsPerPage').addEventListener('change', renderPage);
 
 loadPublicInventory();
 setInterval(loadPublicInventory, 30000);
+// ===== FLOAT API =====
+
+async function fetchFloatFromAPI(inspectLink) {
+    try {
+        const res = await fetch(`/.netlify/functions/get-float?url=${encodeURIComponent(inspectLink)}`);
+        if (!res.ok) return null;
+
+        const data = await res.json();
+
+        if (data?.iteminfo?.floatvalue !== undefined) {
+            return data.iteminfo.floatvalue;
+        }
+
+        return null;
+    } catch (err) {
+        console.warn('Erro ao buscar float:', err);
+        return null;
+    }
+}
+
+// Processa em lote para evitar bloqueio / travamento
+async function processFloatsInBatches(items, batchSize = 5) {
+    let processed = [];
+
+    for (let i = 0; i < items.length; i += batchSize) {
+        const batch = items.slice(i, i + batchSize);
+
+        const results = await Promise.all(
+            batch.map(async item => {
+                if (!item.inspect_link || item.float_value) return item;
+
+                const fullInspectLink = item.inspect_link
+                    .replace('%owner_steamid%', item.owner_steam_id)
+                    .replace('%assetid%', item.asset_id);
+
+                const floatValue = await fetchFloatFromAPI(fullInspectLink);
+
+                return {
+                    ...item,
+                    float_value: floatValue
+                };
+            })
+        );
+
+        processed = processed.concat(results);
+
+        showAdminStatus(`⏳ Buscando floats... ${Math.min(i + batchSize, items.length)}/${items.length}`, '');
+    }
+
+    return processed;
+}
+
