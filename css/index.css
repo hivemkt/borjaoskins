@@ -10,7 +10,6 @@ a {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* CORES ORIGINAIS */
 :root {
     --purple: #9431ce;
     --black: #000000;
@@ -24,10 +23,10 @@ body {
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    overflow-x: hidden;
+    overflow: hidden; /* evita scroll */
 }
 
-/* FUNDO ANIMADO */
+/* FUNDO */
 .bg-animation {
     position: fixed;
     inset: 0;
@@ -53,22 +52,23 @@ body {
     to { transform: rotate(360deg); }
 }
 
-/* CONTAINER */
+/* CONTAINER MAIS COMPACTO */
 .container {
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 520px;
-    padding: 20px 10px 40px;
+    max-width: 480px;
+    padding: 10px 8px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
 }
 
-/* LOGO */
+/* LOGO MAIOR */
 .logo {
-    width: 120px;
-    margin-bottom: 20px;
+    width: 150px;
+    margin-bottom: 10px;
 }
 
 .logo img {
@@ -81,8 +81,8 @@ body {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .btn-main {
@@ -91,13 +91,13 @@ body {
     line-height: 0;
 }
 
-/* GRID 2x2 */
+/* GRID */
 .social-grid {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .btn-social {
@@ -113,11 +113,11 @@ body {
 }
 
 .btn-bottom {
-    width: 60%;
+    width: 55%;
     line-height: 0;
 }
 
-/* MIDIA (GIF / IMG / VIDEO) */
+/* MIDIA */
 .btn-media {
     width: 100%;
     height: auto;
@@ -126,21 +126,24 @@ body {
     pointer-events: none;
 }
 
-/* MOBILE AJUSTE */
-@media (max-width: 480px) {
-    .container {
-        padding: 15px 8px 30px;
+/* MOBILE MAIS COMPACTO AINDA */
+@media (max-height: 700px) {
+    .logo {
+        width: 130px;
+        margin-bottom: 6px;
     }
 
     .main-buttons {
-        gap: 12px;
+        gap: 6px;
+        margin-bottom: 8px;
     }
 
     .social-grid {
-        gap: 10px;
+        gap: 6px;
+        margin-bottom: 8px;
     }
 
     .btn-bottom {
-        width: 70%;
+        width: 50%;
     }
 }
