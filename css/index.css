@@ -1,38 +1,35 @@
-
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   }
 
-
+/* Remove highlight mobile */
 a, button {
 outline: none;
 border: none;
 -webkit-tap-highlight-color: transparent;
 }
 
-
+/* Reset global de video */
 video {
 display: block;
 width: 100%;
-height: auto;
-max-width: 100%;
+height: 100%;
 background: transparent !important;
 border: none !important;
 outline: none !important;
-object-fit: contain;
+object-fit: cover;
 }
 
-
+/* Variáveis */
 :root {
 --purple: #9431ce;
 --black: #000000;
 --purple-glow: rgba(148, 49, 206, 0.4);
 }
 
-
+/* Body */
 body {
 font-family: 'Rajdhani', sans-serif;
 background: var(--black);
@@ -45,7 +42,7 @@ overflow-x: hidden;
 position: relative;
 }
 
-
+/* Background animado */
 .bg-animation {
 position: fixed;
 top: 0;
@@ -74,6 +71,7 @@ animation: bgRotate 20s linear infinite;
 100% { transform: rotate(360deg); }
 }
 
+/* Container */
 .container {
 position: relative;
 z-index: 2;
@@ -85,6 +83,7 @@ flex-direction: column;
 align-items: center;
 }
 
+/* Logo */
 .logo {
 width: 120px;
 height: 120px;
@@ -99,7 +98,7 @@ object-fit: contain;
 display: block;
 }
 
-
+/* Botões principais */
 .main-buttons {
 width: 100%;
 max-width: 500px;
@@ -109,31 +108,33 @@ gap: 14px;
 margin-bottom: 25px;
 }
 
-.btn-main {
-    width: 100%;
-    display: block;
-    text-decoration: none;
-    background: transparent;
-    border: none;
-    outline: none;
-    line-height: 0;
-    overflow: hidden;
+/* ===== BOTÕES (SOLUÇÃO MOBILE REAL) ===== */
+/* Proporção do vídeo: 600x250 = 41.66% */
 
-    aspect-ratio: 12 / 5; 
+.btn-main,
+.btn-social {
+width: 100%;
+position: relative;
+padding-top: 41.66%;
+overflow: hidden;
+display: block;
+text-decoration: none;
+background: transparent;
+border: none;
+line-height: 0;
 }
 
-
-/* VIDEO DO BOTÃO */
+/* Vídeo ocupa todo o container */
 .btn-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+object-fit: cover;
 }
 
-
-
-
+/* Grid social */
 .social-grid {
 width: 100%;
 max-width: 500px;
@@ -142,25 +143,14 @@ grid-template-columns: 1fr 1fr;
 gap: 12px;
 }
 
-
-.btn-social {
-width: 100%;
-display: block;
-text-decoration: none;
-background: transparent;
-border: none;
-padding: 0;
-line-height: 0;
--webkit-tap-highlight-color: transparent;
-}
-
-
+/* Botão central (Steam ou outro) */
 .btn-center {
 grid-column: 1 / -1;
 max-width: 500px;
 margin: 0 auto;
 }
 
+/* Responsivo */
 @media (max-width: 480px) {
 .container {
 padding: 15px 8px 30px;
