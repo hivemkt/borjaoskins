@@ -646,9 +646,7 @@
         try {
             const {error} = await supabaseClient
                 .from('raffles')
-                .update({
-                    active: false
-                })
+                .update({ active: false })
                 .eq('id', currentRaffle.id);
 
             if (error) throw error;
@@ -696,13 +694,7 @@
 
                 sales.forEach(sale => {
                     const saleItem = document.createElement('div');
-                    saleItem.style.cssText = `
-                        background: rgba(255,255,255,0.05);
-                        border: 2px solid rgba(148,49,206,0.3);
-                        border-radius: 10px;
-                        padding: 15px;
-                        margin-bottom: 10px;
-                    `;
+                    saleItem.style.cssText = 'background: rgba(255,255,255,0.05); border: 2px solid rgba(148,49,206,0.3); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
 
                     const statusColor = sale.payment_status === 'approved' ? '#00ff88' : 
                                       sale.payment_status === 'reserved' ? '#ffa500' : '#ff4444';
@@ -832,11 +824,13 @@
         result.innerHTML = '<p>Carregando...</p>';
         
         try {
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+            
             const {data: sales, error} = await supabaseClient
                 .from('raffle_sales')
                 .select('id, buyer_name, buyer_phone, numbers, payment_status, created_at')
                 .eq('raffle_id', currentRaffle.id)
-                .in('payment_status', ['approved', 'reserved'])
+                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${fifteenMinutesAgo})`)
                 .order('created_at', { ascending: true });
             
             if (error) throw error;
@@ -853,10 +847,7 @@
             
             sales.forEach(sale => {
                 if (sale.numbers && Array.isArray(sale.numbers)) {
-                    numerosPorVenda.set(sale.id, {
-                        ...sale,
-                        numeros: sale.numbers
-                    });
+                    numerosPorVenda.set(sale.id, { ...sale, numeros: sale.numbers });
                     sale.numbers.forEach(num => {
                         todosNumeros.push({ numero: num, saleId: sale.id });
                     });
@@ -865,17 +856,13 @@
             
             const contagem = {};
             todosNumeros.forEach(item => {
-                if (!contagem[item.numero]) {
-                    contagem[item.numero] = [];
-                }
+                if (!contagem[item.numero]) contagem[item.numero] = [];
                 contagem[item.numero].push(item.saleId);
             });
             
             const duplicados = {};
             Object.keys(contagem).forEach(numero => {
-                if (contagem[numero].length > 1) {
-                    duplicados[numero] = contagem[numero];
-                }
+                if (contagem[numero].length > 1) duplicados[numero] = contagem[numero];
             });
             
             if (Object.keys(duplicados).length === 0) {
@@ -929,11 +916,13 @@
         result.innerHTML = '<p style="color: #ffa500;">⏳ Realocando números... Aguarde...</p>';
         
         try {
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+            
             const {data: sales, error: salesError} = await supabaseClient
                 .from('raffle_sales')
                 .select('id, buyer_name, numbers, payment_status, created_at')
                 .eq('raffle_id', currentRaffle.id)
-                .in('payment_status', ['approved', 'reserved'])
+                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${fifteenMinutesAgo})`)
                 .order('created_at', { ascending: true });
             
             if (salesError) throw salesError;
@@ -1010,11 +999,11 @@
             html += `<h3 style="color: #00ff88; margin-bottom: 15px;">✅ REALOCAÇÃO CONCLUÍDA!</h3>`;
             html += `<p style="margin-bottom: 15px;">${atualizacoes.length} vendas foram atualizadas:</p>`;
             
-            atualizacoes.forEach((atualização, index) => {
+            atualizacoes.forEach((atualizacao, index) => {
                 html += `<div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 13px;">`;
-                html += `<strong>${index + 1}. ${atualização.buyer}</strong><br>`;
-                html += `<span style="color: #ff4444;">Antes: ${atualização.original}</span><br>`;
-                html += `<span style="color: #00ff88;">Depois: ${atualização.novo}</span>`;
+                html += `<strong>${index + 1}. ${atualizacao.buyer}</strong><br>`;
+                html += `<span style="color: #ff4444;">Antes: ${atualizacao.original}</span><br>`;
+                html += `<span style="color: #00ff88;">Depois: ${atualizacao.novo}</span>`;
                 html += `</div>`;
             });
             
@@ -1029,6 +1018,129 @@
         } catch (error) {
             console.error('Erro ao realocar:', error);
             result.innerHTML = `<p style="color: #ff4444;">❌ Erro ao realocar: ${error.message}</p>`;
+        }
+    };
+
+    async function loadPendingSales() {
+        if (!currentRaffle) return;
+
+        try {
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+            
+            const {data: pendingSales, error} = await supabaseClient
+                .from('raffle_sales')
+                .select('*')
+                .eq('raffle_id', currentRaffle.id)
+                .eq('payment_status', 'reserved')
+                .gte('created_at', fifteenMinutesAgo)
+                .order('created_at', {ascending: false});
+
+            if (error) throw error;
+
+            const container = document.getElementById('pendingSalesList');
+
+            if (!pendingSales || pendingSales.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda pendente</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            pendingSales.forEach(sale => {
+                const createdDate = new Date(sale.created_at);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - createdDate) / 1000 / 60);
+                const remainingMinutes = 15 - diffMinutes;
+
+                const saleItem = document.createElement('div');
+                saleItem.style.cssText = 'background: rgba(255,165,0,0.1); border: 2px solid rgba(255,165,0,0.5); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
+
+                const statusColor = remainingMinutes > 10 ? '#00ff88' : remainingMinutes > 5 ? '#ffa500' : '#ff4444';
+
+                saleItem.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="font-size: 16px;">${sale.buyer_name}</strong><br>
+                            <span style="font-size: 14px; color: rgba(255,255,255,0.7);">📱 ${sale.buyer_phone}</span>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: ${statusColor}; font-weight: 600; font-size: 14px;">
+                                ⏱️ ${remainingMinutes > 0 ? `${remainingMinutes} min restantes` : 'EXPIRADO'}
+                            </div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px;">
+                                ${createdDate.toLocaleString('pt-BR')}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                        🎫 Números: <strong style="color: white;">${sale.numbers ? sale.numbers.join(', ') : 'N/A'}</strong><br>
+                        💰 Valor: <strong style="color: #00ff88;">R$ ${(sale.total_amount || 0).toFixed(2)}</strong>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="approveManually('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #00ff88, #00dd77); color: black; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
+                            ✅ Aprovar Manualmente
+                        </button>
+                        <button onclick="cancelSale('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
+                            ❌ Cancelar Venda
+                        </button>
+                    </div>
+                `;
+
+                container.appendChild(saleItem);
+            });
+
+        } catch (error) {
+            console.error('Erro ao carregar vendas pendentes:', error);
+        }
+    }
+
+    window.approveManually = async function(saleId) {
+        if (!confirm('Tem certeza que deseja aprovar esta venda MANUALMENTE? Esta ação confirma o pagamento e libera os números.')) {
+            return;
+        }
+
+        try {
+            const {error} = await supabaseClient
+                .from('raffle_sales')
+                .update({ payment_status: 'approved' })
+                .eq('id', saleId);
+
+            if (error) throw error;
+
+            alert('✅ Venda aprovada com sucesso!');
+            await loadSalesData();
+            await loadPendingSales();
+            await loadSoldNumbers();
+            renderNumbers();
+
+        } catch (error) {
+            console.error('Erro ao aprovar:', error);
+            alert('❌ Erro ao aprovar venda: ' + error.message);
+        }
+    };
+
+    window.cancelSale = async function(saleId) {
+        if (!confirm('Tem certeza que deseja CANCELAR esta venda? Os números voltarão a ficar disponíveis.')) {
+            return;
+        }
+
+        try {
+            const {error} = await supabaseClient
+                .from('raffle_sales')
+                .update({ payment_status: 'cancelled' })
+                .eq('id', saleId);
+
+            if (error) throw error;
+
+            alert('✅ Venda cancelada!');
+            await loadSalesData();
+            await loadPendingSales();
+            await loadSoldNumbers();
+            renderNumbers();
+
+        } catch (error) {
+            console.error('Erro ao cancelar:', error);
+            alert('❌ Erro ao cancelar venda: ' + error.message);
         }
     };
 
@@ -1050,138 +1162,6 @@
             }
         });
     }
-
-    
-// ===== APROVAÇÃO MANUAL DE VENDAS =====
-async function loadPendingSales() {
-    if (!currentRaffle) return;
-
-    try {
-        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-        
-        const {data: pendingSales, error} = await supabaseClient
-            .from('raffle_sales')
-            .select('*')
-            .eq('raffle_id', currentRaffle.id)
-            .eq('payment_status', 'reserved')
-            .gte('created_at', fifteenMinutesAgo)
-            .order('created_at', {ascending: false});
-
-        if (error) throw error;
-
-        const container = document.getElementById('pendingSalesList');
-
-        if (!pendingSales || pendingSales.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda pendente</p>';
-            return;
-        }
-
-        container.innerHTML = '';
-
-        pendingSales.forEach(sale => {
-            const createdDate = new Date(sale.created_at);
-            const now = new Date();
-            const diffMinutes = Math.floor((now - createdDate) / 1000 / 60);
-            const remainingMinutes = 15 - diffMinutes;
-
-            const saleItem = document.createElement('div');
-            saleItem.style.cssText = 'background: rgba(255,165,0,0.1); border: 2px solid rgba(255,165,0,0.5); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
-
-            const statusColor = remainingMinutes > 10 ? '#00ff88' : remainingMinutes > 5 ? '#ffa500' : '#ff4444';
-
-            saleItem.innerHTML = `
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-                    <div>
-                        <strong style="font-size: 16px;">${sale.buyer_name}</strong><br>
-                        <span style="font-size: 14px; color: rgba(255,255,255,0.7);">📱 ${sale.buyer_phone}</span>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="color: ${statusColor}; font-weight: 600; font-size: 14px;">
-                            ⏱️ ${remainingMinutes > 0 ? `${remainingMinutes} min restantes` : 'EXPIRADO'}
-                        </div>
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px;">
-                            ${createdDate.toLocaleString('pt-BR')}
-                        </div>
-                    </div>
-                </div>
-                <div style="margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.7);">
-                    🎫 Números: <strong style="color: white;">${sale.numbers ? sale.numbers.join(', ') : 'N/A'}</strong><br>
-                    💰 Valor: <strong style="color: #00ff88;">R$ ${(sale.total_amount || 0).toFixed(2)}</strong>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="approveManually('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #00ff88, #00dd77); color: black; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
-                        ✅ Aprovar Manualmente
-                    </button>
-                    <button onclick="cancelSale('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
-                        ❌ Cancelar Venda
-                    </button>
-                </div>
-            `;
-
-            container.appendChild(saleItem);
-        });
-
-    } catch (error) {
-        console.error('Erro ao carregar vendas pendentes:', error);
-    }
-}
-
-window.approveManually = async function(saleId) {
-    if (!confirm('✅ Tem certeza que deseja aprovar esta venda MANUALMENTE?
-
-Esta ação confirma o pagamento e libera os números.')) {
-        return;
-    }
-
-    try {
-        const {error} = await supabaseClient
-            .from('raffle_sales')
-            .update({ payment_status: 'approved' })
-            .eq('id', saleId);
-
-        if (error) throw error;
-
-        alert('✅ Venda aprovada com sucesso!');
-        await loadSalesData();
-        await loadPendingSales();
-        await loadPendingSales();
-        await loadSoldNumbers();
-        renderNumbers();
-
-    } catch (error) {
-        console.error('Erro ao aprovar:', error);
-        alert('❌ Erro ao aprovar venda: ' + error.message);
-    }
-};
-
-window.cancelSale = async function(saleId) {
-    if (!confirm('❌ Tem certeza que deseja CANCELAR esta venda?
-
-Os números voltarão a ficar disponíveis.')) {
-        return;
-    }
-
-    try {
-        const {error} = await supabaseClient
-            .from('raffle_sales')
-            .update({ payment_status: 'cancelled' })
-            .eq('id', saleId);
-
-        if (error) throw error;
-
-        alert('✅ Venda cancelada!');
-        await loadSalesData();
-        await loadPendingSales();
-        await loadPendingSales();
-        await loadSoldNumbers();
-        renderNumbers();
-
-    } catch (error) {
-        console.error('Erro ao cancelar:', error);
-        alert('❌ Erro ao cancelar venda: ' + error.message);
-    }
-};
-
 
     init();
 })();
