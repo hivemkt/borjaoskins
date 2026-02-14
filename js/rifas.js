@@ -88,12 +88,12 @@
         if (!currentRaffle || !currentRaffle.id) return;
         
         try {
-            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
             const {data, error} = await supabaseClient
                 .from('raffle_sales')
                 .select('numbers, payment_status, created_at')
                 .eq('raffle_id', currentRaffle.id)
-                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${twoMinutesAgo})`);
+                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${fifteenMinutesAgo})`);
             
             if (error) throw error;
             
@@ -247,12 +247,12 @@
             
             await new Promise(resolve => setTimeout(resolve, 2000));
             
-            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+            const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
             const {data: checkSales, error: checkError} = await supabaseClient
                 .from('raffle_sales')
                 .select('numbers')
                 .eq('raffle_id', currentRaffle.id)
-                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${twoMinutesAgo})`);
+                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${fifteenMinutesAgo})`);
             
             if (checkError) throw checkError;
             
@@ -522,6 +522,7 @@
 
         togglePromoFields();
         await loadSalesData();
+        await loadPendingSales();
     }
 
     function togglePromoFields() {
@@ -1049,6 +1050,138 @@
             }
         });
     }
+
+    
+// ===== APROVAÇÃO MANUAL DE VENDAS =====
+async function loadPendingSales() {
+    if (!currentRaffle) return;
+
+    try {
+        const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+        
+        const {data: pendingSales, error} = await supabaseClient
+            .from('raffle_sales')
+            .select('*')
+            .eq('raffle_id', currentRaffle.id)
+            .eq('payment_status', 'reserved')
+            .gte('created_at', fifteenMinutesAgo)
+            .order('created_at', {ascending: false});
+
+        if (error) throw error;
+
+        const container = document.getElementById('pendingSalesList');
+
+        if (!pendingSales || pendingSales.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda pendente</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+
+        pendingSales.forEach(sale => {
+            const createdDate = new Date(sale.created_at);
+            const now = new Date();
+            const diffMinutes = Math.floor((now - createdDate) / 1000 / 60);
+            const remainingMinutes = 15 - diffMinutes;
+
+            const saleItem = document.createElement('div');
+            saleItem.style.cssText = 'background: rgba(255,165,0,0.1); border: 2px solid rgba(255,165,0,0.5); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
+
+            const statusColor = remainingMinutes > 10 ? '#00ff88' : remainingMinutes > 5 ? '#ffa500' : '#ff4444';
+
+            saleItem.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                    <div>
+                        <strong style="font-size: 16px;">${sale.buyer_name}</strong><br>
+                        <span style="font-size: 14px; color: rgba(255,255,255,0.7);">📱 ${sale.buyer_phone}</span>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="color: ${statusColor}; font-weight: 600; font-size: 14px;">
+                            ⏱️ ${remainingMinutes > 0 ? `${remainingMinutes} min restantes` : 'EXPIRADO'}
+                        </div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 3px;">
+                            ${createdDate.toLocaleString('pt-BR')}
+                        </div>
+                    </div>
+                </div>
+                <div style="margin-bottom: 12px; font-size: 14px; color: rgba(255,255,255,0.7);">
+                    🎫 Números: <strong style="color: white;">${sale.numbers ? sale.numbers.join(', ') : 'N/A'}</strong><br>
+                    💰 Valor: <strong style="color: #00ff88;">R$ ${(sale.total_amount || 0).toFixed(2)}</strong>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="approveManually('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #00ff88, #00dd77); color: black; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
+                        ✅ Aprovar Manualmente
+                    </button>
+                    <button onclick="cancelSale('${sale.id}')" style="flex: 1; background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 14px;">
+                        ❌ Cancelar Venda
+                    </button>
+                </div>
+            `;
+
+            container.appendChild(saleItem);
+        });
+
+    } catch (error) {
+        console.error('Erro ao carregar vendas pendentes:', error);
+    }
+}
+
+window.approveManually = async function(saleId) {
+    if (!confirm('✅ Tem certeza que deseja aprovar esta venda MANUALMENTE?
+
+Esta ação confirma o pagamento e libera os números.')) {
+        return;
+    }
+
+    try {
+        const {error} = await supabaseClient
+            .from('raffle_sales')
+            .update({ payment_status: 'approved' })
+            .eq('id', saleId);
+
+        if (error) throw error;
+
+        alert('✅ Venda aprovada com sucesso!');
+        await loadSalesData();
+        await loadPendingSales();
+        await loadPendingSales();
+        await loadSoldNumbers();
+        renderNumbers();
+
+    } catch (error) {
+        console.error('Erro ao aprovar:', error);
+        alert('❌ Erro ao aprovar venda: ' + error.message);
+    }
+};
+
+window.cancelSale = async function(saleId) {
+    if (!confirm('❌ Tem certeza que deseja CANCELAR esta venda?
+
+Os números voltarão a ficar disponíveis.')) {
+        return;
+    }
+
+    try {
+        const {error} = await supabaseClient
+            .from('raffle_sales')
+            .update({ payment_status: 'cancelled' })
+            .eq('id', saleId);
+
+        if (error) throw error;
+
+        alert('✅ Venda cancelada!');
+        await loadSalesData();
+        await loadPendingSales();
+        await loadPendingSales();
+        await loadSoldNumbers();
+        renderNumbers();
+
+    } catch (error) {
+        console.error('Erro ao cancelar:', error);
+        alert('❌ Erro ao cancelar venda: ' + error.message);
+    }
+};
+
 
     init();
 })();
