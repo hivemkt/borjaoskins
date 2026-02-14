@@ -16,7 +16,7 @@
     <div class="bg-animation"></div>
     <div class="container">
         <div class="header">
-            <a href="linktree-cs.html" style="display: block; width: fit-content; margin: 0 auto;">
+            <a href="mrifas.html" style="display: block; width: fit-content; margin: 0 auto;">
                 <div class="logo">
                     <img src="images/logodb.png" alt="Logo Borjão Skins">
                 </div>
@@ -213,6 +213,7 @@
                 <h1 class="admin-title">🎮 PAINEL ADMINISTRATIVO</h1>
                 <button class="admin-close" onclick="closeAdminPanel()">Fechar</button>
             </div>
+            
             <div class="admin-section">
                 <h2 class="admin-section-title">⚙️ Configurar Rifa</h2>
                 <div id="noRaffleWarning" style="display: none; background: rgba(255, 165, 0, 0.1); border: 2px solid #ffa500; border-radius: 10px; padding: 15px; margin-bottom: 20px;">
@@ -274,6 +275,16 @@
                     🔍 Verificar Números Duplicados
                 </button>
                 <div id="duplicadosResult" style="margin-top: 20px;"></div>
+            </div>
+            
+            <div class="admin-section">
+                <h2 class="admin-section-title">⏳ Vendas Pendentes (Reservadas)</h2>
+                <p style="margin-bottom: 15px; color: rgba(255,255,255,0.7);">
+                    Vendas que estão aguardando pagamento. Você pode aprovar manualmente ou aguardar o PIX.
+                </p>
+                <div id="pendingSalesList" style="max-height: 400px; overflow-y: auto;">
+                    <p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda pendente</p>
+                </div>
             </div>
             
             <div class="admin-section">
