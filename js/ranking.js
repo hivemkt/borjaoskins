@@ -3,6 +3,32 @@ const SUPABASE_KEY = window.ENV.SUPABASE_KEY;
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ADMIN_PASSWORD_HASH = window.ENV.ADMIN_HASH;
 
+// PATENTES DO CS:GO
+const PATENTES = {
+    1: { nome: 'Global Elite', emoji: '🌐', cor: '#FFD700' },
+    2: { nome: 'Supremo', emoji: '👑', cor: '#FF4500' },
+    3: { nome: 'Águia', emoji: '🦅', cor: '#FF6347' },
+    4: { nome: 'Xerife', emoji: '⭐', cor: '#FFA500' },
+    5: { nome: 'Xerife', emoji: '⭐', cor: '#FFA500' },
+    6: { nome: 'Xerife', emoji: '⭐', cor: '#FFA500' },
+    7: { nome: 'AK', emoji: '🔫', cor: '#32CD32' },
+    8: { nome: 'AK', emoji: '🔫', cor: '#32CD32' },
+    9: { nome: 'AK', emoji: '🔫', cor: '#32CD32' },
+    10: { nome: 'AK', emoji: '🔫', cor: '#32CD32' },
+    11: { nome: 'Ouro', emoji: '🥇', cor: '#FFD700' },
+    12: { nome: 'Ouro', emoji: '🥇', cor: '#FFD700' },
+    13: { nome: 'Ouro', emoji: '🥇', cor: '#FFD700' },
+    14: { nome: 'Ouro', emoji: '🥇', cor: '#FFD700' },
+    15: { nome: 'Ouro', emoji: '🥇', cor: '#FFD700' }
+};
+
+function getPatente(position) {
+    if (PATENTES[position]) {
+        return PATENTES[position];
+    }
+    return { nome: 'Prata', emoji: '🥈', cor: '#C0C0C0' };
+}
+
 async function hashPassword(password) {
     const msgBuffer = new TextEncoder().encode(password);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -68,6 +94,9 @@ async function loadRanking() {
             // Medal ou posição
             const medal = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : '';
             
+            // Patente
+            const patente = getPatente(position);
+            
             // Nomes dos jogadores (separados por vírgula se múltiplos)
             const names = players.map(p => {
                 const nameParts = (p.buyer_name || 'Anônimo').split(' ');
@@ -97,7 +126,9 @@ async function loadRanking() {
                 ${medal ? `<div class="ranking-medal">${medal}</div>` : `<div class="ranking-position">${position}º</div>`}
                 <div class="ranking-info-box">
                     <div class="ranking-name">${names}</div>
-                    <div class="ranking-numbers">${totalNumbers} cota(s)</div>
+                    <div class="ranking-patente" style="color: ${patente.cor};">
+                        ${patente.emoji} ${patente.nome}
+                    </div>
                 </div>
                 <div class="ranking-points">
                     <div class="ranking-points-value">${points}</div>
