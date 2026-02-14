@@ -113,20 +113,23 @@
     }
 
     function renderNumbers() {
+        if (!currentRaffle) return;
+        
         const grid = document.getElementById('numbersGrid');
         grid.innerHTML = '';
-        const totalNumbers = currentRaffle.total_numbers || 100;
         
-        for (let i = 1; i <= totalNumbers; i++) {
+        for (let i = 1; i <= currentRaffle.total_numbers; i++) {
             const box = document.createElement('div');
             box.className = 'number-box';
-            box.textContent = i;
             box.dataset.number = i;
+            box.textContent = String(i).padStart(2, '0');
             
             if (soldNumbers.has(i)) {
                 box.classList.add('sold');
+            } else if (selectedNumbers.has(i)) {
+                box.classList.add('selected');
             } else {
-                box.addEventListener('click', () => toggleNumber(i));
+                box.onclick = () => toggleNumber(i);
             }
             
             grid.appendChild(box);
@@ -134,6 +137,8 @@
     }
 
     function toggleNumber(number) {
+        if (soldNumbers.has(number)) return;
+        
         if (selectedNumbers.has(number)) {
             selectedNumbers.delete(number);
         } else {
@@ -192,202 +197,279 @@
     window.initCheckout = async function() {
         if (selectedNumbers.size === 0) return;
         
-        const name = prompt('Digite seu nome e sobrenome:');
-        if (!name || name.trim() === '') return;
+        document.getElementById('dadosModal').style.display = 'flex';
+        document.getElementById('dadosModal').classList.add('active');
         
-        let phone = prompt('Digite seu WhatsApp (com DDD):\nExemplo: 11987654321');
-        if (!phone || phone.trim() === '') return;
+        document.getElementById('inputNome').value = '';
+        document.getElementById('inputTelefone').value = '';
         
-        phone = phone.replace(/\D/g, '');
+        setTimeout(() => {
+            document.getElementById('inputNome').focus();
+        }, 300);
+    };
+
+    window.closeDadosModal = function() {
+        document.getElementById('dadosModal').classList.remove('active');
+        document.getElementById('dadosModal').style.display = 'none';
+    };
+
+    window.processarCompra = async function() {
+        const nome = document.getElementById('inputNome').value.trim();
+        const telefone = document.getElementById('inputTelefone').value.trim();
         
+        if (!nome || nome.split(' ').length < 2) {
+            alert('❌ Por favor, digite seu nome e sobrenome completos');
+            document.getElementById('inputNome').focus();
+            return;
+        }
+        
+        if (!telefone || telefone.length < 10) {
+            alert('❌ Por favor, digite um telefone válido com DDD\nExemplo: 11987654321');
+            document.getElementById('inputTelefone').focus();
+            return;
+        }
+        
+        const phone = telefone.replace(/\D/g, '');
         if (phone.length < 10 || phone.length > 11) {
-            alert('Telefone inválido!\n\nDigite o WhatsApp com DDD (10 ou 11 números).\nExemplo: 11987654321');
+            alert('❌ Telefone inválido! Digite apenas números com DDD\nExemplo: 11987654321');
             return;
         }
         
-        const ddd = parseInt(phone.substring(0, 2));
-        if (ddd < 11 || ddd > 99) {
-            alert('DDD inválido!\n\nDigite um DDD válido (11 a 99).\nExemplo: 11987654321');
-            return;
-        }
+        closeDadosModal();
+        
+        document.getElementById('loadingModal').style.display = 'flex';
+        document.getElementById('loadingModal').classList.add('active');
         
         try {
-            if (currentRaffle.max_per_person && currentRaffle.max_per_person > 0) {
-                const {data: previousSales, error: salesError} = await supabaseClient
-                    .from('raffle_sales')
-                    .select('numbers')
-                    .eq('raffle_id', currentRaffle.id)
-                    .eq('buyer_phone', phone)
-                    .eq('payment_status', 'approved');
-                
-                if (salesError) throw salesError;
-                
-                let totalBought = 0;
-                if (previousSales && previousSales.length > 0) {
-                    previousSales.forEach(sale => {
-                        totalBought += sale.numbers.length;
-                    });
-                }
-                
-                const totalAfterPurchase = totalBought + selectedNumbers.size;
-                
-                if (totalAfterPurchase > currentRaffle.max_per_person) {
-                    const remaining = currentRaffle.max_per_person - totalBought;
-                    alert(`Limite de cotas por pessoa atingido!\n\n` +
-                          `Você já comprou: ${totalBought} cota(s)\n` +
-                          `Tentando comprar: ${selectedNumbers.size} cota(s)\n` +
-                          `Limite máximo: ${currentRaffle.max_per_person} cota(s)\n\n` +
-                          `Você pode comprar no máximo mais ${remaining} cota(s).`);
-                    return;
-                }
+            const numbersArray = Array.from(selectedNumbers);
+            
+            console.log('🔍 Verificando disponibilidade dos números...');
+            
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000).toISOString();
+            const {data: checkSales, error: checkError} = await supabaseClient
+                .from('raffle_sales')
+                .select('numbers')
+                .eq('raffle_id', currentRaffle.id)
+                .or(`payment_status.eq.approved,and(payment_status.eq.reserved,created_at.gte.${twoMinutesAgo})`);
+            
+            if (checkError) throw checkError;
+            
+            const numerosJaReservados = new Set();
+            if (checkSales) {
+                checkSales.forEach(sale => {
+                    if (sale.numbers && Array.isArray(sale.numbers)) {
+                        sale.numbers.forEach(num => numerosJaReservados.add(num));
+                    }
+                });
             }
+            
+            const conflitos = numbersArray.filter(num => numerosJaReservados.has(num));
+            
+            if (conflitos.length > 0) {
+                document.getElementById('loadingModal').classList.remove('active');
+                document.getElementById('loadingModal').style.display = 'none';
+                
+                alert(`❌ NÚMEROS JÁ RESERVADOS!\n\nOs seguintes números foram reservados:\n\n${conflitos.join(', ')}\n\nPor favor, escolha outros números.`);
+                
+                await loadSoldNumbers();
+                renderNumbers();
+                return;
+            }
+            
+            console.log('✅ Números disponíveis! Prosseguindo...');
             
             const totalText = document.getElementById('totalPrice').textContent;
             const totalAmount = parseFloat(totalText.replace('R$ ', '').replace(',', '.'));
-            const numbersArray = Array.from(selectedNumbers);
             
-            const {data: saleData, error: saleError} = await supabaseClient
-                .from('raffle_sales')
-                .insert({
+            const reserveResponse = await fetch('/.netlify/functions/reserve-numbers', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
                     raffle_id: currentRaffle.id,
-                    buyer_name: name.trim(),
+                    buyer_name: nome,
                     buyer_phone: phone,
                     numbers: numbersArray,
-                    total_amount: totalAmount,
-                    payment_status: 'reserved',
-                    created_at: new Date().toISOString()
+                    total_amount: totalAmount
                 })
-                .select()
-                .single();
+            });
+
+            const reserveData = await reserveResponse.json();
+
+            if (!reserveResponse.ok) {
+                if (reserveResponse.status === 409) {
+                    document.getElementById('loadingModal').classList.remove('active');
+                    document.getElementById('loadingModal').style.display = 'none';
+                    
+                    alert(`❌ Números já reservados!\n\nNúmeros: ${reserveData.conflicting_numbers.join(', ')}\n\nEscolha outros números.`);
+                          
+                    await loadSoldNumbers();
+                    renderNumbers();
+                    return;
+                }
+                throw new Error(reserveData.error || 'Erro ao reservar');
+            }
+
+            const saleData = reserveData.sale;
             
-            if (saleError) throw saleError;
+            document.getElementById('loadingModal').classList.remove('active');
+            document.getElementById('loadingModal').style.display = 'none';
             
             await generatePixPayment(saleData, totalAmount, numbersArray);
-        } catch(error) {
-            alert('Erro ao processar compra: ' + (error.message || 'Tente novamente.'));
+            
+        } catch (error) {
+            document.getElementById('loadingModal').classList.remove('active');
+            document.getElementById('loadingModal').style.display = 'none';
+            
+            console.error('Erro:', error);
+            alert('❌ Erro: ' + error.message);
         }
     };
 
-    async function generatePixPayment(saleData, amount, numbers) {
+    async function generatePixPayment(saleData, totalAmount, numbersArray) {
         try {
             document.getElementById('pixModal').style.display = 'flex';
             document.getElementById('pixModal').classList.add('active');
             document.getElementById('pixLoading').style.display = 'block';
             document.getElementById('pixContent').style.display = 'none';
-            
-            const paymentData = {
-                transaction_amount: amount,
-                description: `Rifa ${currentRaffle.title} - Números: ${numbers.join(', ')}`,
-                payment_method_id: 'pix',
-                payer: {
-                    email: CLIENT_EMAIL,
-                    first_name: saleData.buyer_name.split(' ')[0],
-                    last_name: saleData.buyer_name.split(' ').slice(1).join(' ') || saleData.buyer_name
-                },
-                notification_url: window.location.origin + '/.netlify/functions/webhook',
-                external_reference: saleData.id
-            };
-            
-            const response = await fetch('/.netlify/functions/create-pix', {
+
+            const createPixResponse = await fetch('/.netlify/functions/create-pix', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(paymentData)
+                body: JSON.stringify({
+                    sale_id: saleData.id,
+                    amount: totalAmount,
+                    buyer_email: CLIENT_EMAIL,
+                    buyer_name: saleData.buyer_name
+                })
             });
-            
-            const pixData = await response.json();
-            
-            if (!response.ok || pixData.error) {
-                throw new Error(pixData.error || pixData.message || 'Erro ao gerar PIX');
+
+            if (!createPixResponse.ok) {
+                const errorData = await createPixResponse.json();
+                throw new Error(errorData.error || 'Erro ao gerar PIX');
             }
+
+            const pixData = await createPixResponse.json();
+
+            document.getElementById('pixLoading').style.display = 'none';
+            document.getElementById('pixContent').style.display = 'block';
+
+            const qrContainer = document.getElementById('qrCodeContainer');
+            qrContainer.innerHTML = `<img src="data:image/png;base64,${pixData.qr_code_base64}" style="width: 250px; height: 250px;">`;
             
-            if (pixData.qr_code_base64 && pixData.qr_code) {
-                await supabaseClient
-                    .from('raffle_sales')
-                    .update({payment_id: pixData.id})
-                    .eq('id', saleData.id);
-                
-                displayPixQRCode(pixData.qr_code_base64, pixData.qr_code, pixData.id, saleData.id);
-                startPaymentCheck(pixData.id, saleData.id);
-            } else {
-                throw new Error('QR Code não encontrado na resposta');
-            }
-        } catch(error) {
+            document.getElementById('pixCode').textContent = pixData.qr_code;
+
+            window.currentPixCode = pixData.qr_code;
+            window.currentPaymentId = pixData.payment_id;
+
+            startPaymentCheck(saleData.id, numbersArray);
+
+        } catch (error) {
+            console.error('Erro ao gerar PIX:', error);
+            alert('❌ Erro ao gerar pagamento PIX: ' + error.message);
             document.getElementById('pixModal').classList.remove('active');
             document.getElementById('pixModal').style.display = 'none';
-            alert('Erro ao gerar pagamento PIX.\n\nDetalhes: ' + error.message);
         }
-    }
-
-    function displayPixQRCode(qrCodeBase64, pixCodeString, paymentId, saleId) {
-        document.getElementById('pixLoading').style.display = 'none';
-        document.getElementById('pixContent').style.display = 'block';
-        
-        const qrContainer = document.getElementById('qrCodeContainer');
-        qrContainer.innerHTML = `<img src="data:image/png;base64,${qrCodeBase64}" alt="QR Code PIX" style="max-width:300px;">`;
-        
-        document.getElementById('pixCode').textContent = pixCodeString;
-        window.currentPixCode = pixCodeString;
     }
 
     window.copyPixCode = function() {
-        if (window.currentPixCode) {
-            navigator.clipboard.writeText(window.currentPixCode)
-                .then(() => alert('Código PIX copiado!'))
-                .catch(() => {
-                    const textarea = document.createElement('textarea');
-                    textarea.value = window.currentPixCode;
-                    document.body.appendChild(textarea);
-                    textarea.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(textarea);
-                    alert('Código PIX copiado!');
-                });
-        }
+        if (!window.currentPixCode) return;
+        
+        navigator.clipboard.writeText(window.currentPixCode).then(() => {
+            alert('✅ Código PIX copiado!');
+        }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = window.currentPixCode;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('✅ Código PIX copiado!');
+        });
     };
 
-    window.closePixModal = function() {
-        document.getElementById('pixModal').classList.remove('active');
-        document.getElementById('pixModal').style.display = 'none';
-        if (window.paymentCheckInterval) {
-            clearInterval(window.paymentCheckInterval);
-        }
-        location.reload();
-    };
-
-    async function startPaymentCheck(paymentId, saleId) {
+    function startPaymentCheck(saleId, numbersArray) {
         let attempts = 0;
         const maxAttempts = 60;
-        
-        window.paymentCheckInterval = setInterval(async () => {
+
+        const checkInterval = setInterval(async () => {
             attempts++;
-            
-            if (attempts >= maxAttempts) {
-                clearInterval(window.paymentCheckInterval);
-                alert('Tempo expirado.\n\nSe você já pagou, seus números serão liberados automaticamente em breve.');
-                closePixModal();
+
+            if (attempts > maxAttempts) {
+                clearInterval(checkInterval);
                 return;
             }
-            
+
             try {
-                const {data, error} = await supabaseClient
+                const {data: sale, error} = await supabaseClient
                     .from('raffle_sales')
-                    .select('payment_status, numbers')
+                    .select('payment_status')
                     .eq('id', saleId)
                     .single();
-                
-                if (data && data.payment_status === 'approved') {
-                    clearInterval(window.paymentCheckInterval);
+
+                if (error) throw error;
+
+                if (sale.payment_status === 'approved') {
+                    clearInterval(checkInterval);
                     
                     document.getElementById('pixModal').classList.remove('active');
                     document.getElementById('pixModal').style.display = 'none';
                     
-                    showConfirmationModal(data.numbers);
+                    showConfirmationModal(numbersArray);
+                    
+                    selectedNumbers.clear();
+                    await loadSoldNumbers();
+                    renderNumbers();
+                    updateCheckout();
                 }
-            } catch(error) {
+            } catch (error) {
                 console.error('Erro ao verificar pagamento:', error);
             }
         }, 15000);
     }
+
+    function showConfirmationModal(numbersArray) {
+        const modal = document.getElementById('confirmationModal');
+        const numbersContainer = document.getElementById('confirmationNumbers');
+        
+        numbersContainer.innerHTML = '';
+        numbersArray.forEach(num => {
+            const numberBox = document.createElement('div');
+            numberBox.style.cssText = `
+                background: linear-gradient(135deg, var(--purple), #6b1fa0);
+                border: 3px solid #00ff88;
+                border-radius: 12px;
+                padding: 15px 20px;
+                font-size: 32px;
+                font-weight: 700;
+                color: white;
+                box-shadow: 0 5px 20px rgba(148, 49, 206, 0.5);
+            `;
+            numberBox.textContent = String(num).padStart(2, '0');
+            numbersContainer.appendChild(numberBox);
+        });
+        
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+    }
+
+    window.closeConfirmationModal = function() {
+        document.getElementById('confirmationModal').classList.remove('active');
+        document.getElementById('confirmationModal').style.display = 'none';
+        window.location.reload();
+    };
+
+    window.closePixModal = function(keepReserved = false) {
+        document.getElementById('pixModal').classList.remove('active');
+        document.getElementById('pixModal').style.display = 'none';
+        
+        if (!keepReserved) {
+            selectedNumbers.clear();
+            renderNumbers();
+            updateCheckout();
+        }
+    };
 
     async function hashPassword(password) {
         const msgBuffer = new TextEncoder().encode(password);
@@ -399,15 +481,15 @@
     window.openAdminPanel = async function() {
         const password = prompt('Digite a senha do administrador:');
         if (!password) return;
-        
+
         const hash = await hashPassword(password);
         if (hash !== ADMIN_PASSWORD_HASH) {
-            alert('Senha incorreta!');
+            alert('❌ Senha incorreta');
             return;
         }
-        
+
         document.getElementById('adminPanel').classList.add('active');
-        loadAdminData();
+        await loadAdminData();
     };
 
     window.closeAdminPanel = function() {
@@ -418,17 +500,16 @@
         if (!currentRaffle) {
             document.getElementById('noRaffleWarning').style.display = 'block';
             document.getElementById('btnSaveRaffle').style.display = 'none';
-            document.getElementById('btnFinishRaffle').style.display = 'none';
             document.getElementById('btnCreateRaffle').style.display = 'inline-block';
-            document.getElementById('salesList').innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
+            document.getElementById('btnFinishRaffle').style.display = 'none';
             return;
         }
-        
+
         document.getElementById('noRaffleWarning').style.display = 'none';
         document.getElementById('btnSaveRaffle').style.display = 'inline-block';
-        document.getElementById('btnFinishRaffle').style.display = 'inline-block';
         document.getElementById('btnCreateRaffle').style.display = 'none';
-        
+        document.getElementById('btnFinishRaffle').style.display = 'inline-block';
+
         document.getElementById('adminTitle').value = currentRaffle.title || '';
         document.getElementById('adminDescription').value = currentRaffle.description || '';
         document.getElementById('adminImage').value = currentRaffle.image_url || '';
@@ -438,15 +519,9 @@
         document.getElementById('adminPromoEnabled').checked = currentRaffle.promo_enabled || false;
         document.getElementById('adminPromoDiscount').value = currentRaffle.promo_discount || '';
         document.getElementById('adminPromoMinNumbers').value = currentRaffle.promo_min_numbers || '';
-        
-        if (currentRaffle.image_url) {
-            document.getElementById('previewImg').src = currentRaffle.image_url;
-            document.getElementById('imagePreview').style.display = 'block';
-        }
-        
+
         togglePromoFields();
-        await loadSales();
-        updateAdminStats();
+        await loadSalesData();
     }
 
     function togglePromoFields() {
@@ -459,7 +534,7 @@
     window.handleImageUpload = function(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
+
         const reader = new FileReader();
         reader.onload = function(e) {
             const base64 = e.target.result;
@@ -470,332 +545,514 @@
         reader.readAsDataURL(file);
     };
 
+    window.saveRaffleConfig = async function() {
+        if (!currentRaffle) return;
+
+        try {
+            const title = document.getElementById('adminTitle').value;
+            const description = document.getElementById('adminDescription').value;
+            const imageUrl = document.getElementById('adminImage').value;
+            const price = parseFloat(document.getElementById('adminPrice').value);
+            const totalNumbers = parseInt(document.getElementById('adminTotalNumbers').value);
+            const maxPerPerson = parseInt(document.getElementById('adminMaxPerPerson').value) || 0;
+            const promoEnabled = document.getElementById('adminPromoEnabled').checked;
+            const promoDiscount = parseFloat(document.getElementById('adminPromoDiscount').value) || 0;
+            const promoMinNumbers = parseInt(document.getElementById('adminPromoMinNumbers').value) || 0;
+
+            if (!title || !imageUrl || !price || !totalNumbers) {
+                alert('❌ Preencha todos os campos obrigatórios!');
+                return;
+            }
+
+            const {error} = await supabaseClient
+                .from('raffles')
+                .update({
+                    title,
+                    description,
+                    image_url: imageUrl,
+                    price_per_number: price,
+                    total_numbers: totalNumbers,
+                    max_per_person: maxPerPerson,
+                    promo_enabled: promoEnabled,
+                    promo_discount: promoDiscount,
+                    promo_min_numbers: promoMinNumbers,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', currentRaffle.id);
+
+            if (error) throw error;
+
+            alert('✅ Configurações salvas!');
+            await loadRaffle();
+            await loadSoldNumbers();
+            renderNumbers();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('❌ Erro ao salvar: ' + error.message);
+        }
+    };
+
     window.createNewRaffle = async function() {
         try {
             const title = document.getElementById('adminTitle').value;
             const description = document.getElementById('adminDescription').value;
             const imageUrl = document.getElementById('adminImage').value;
             const price = parseFloat(document.getElementById('adminPrice').value);
-            
-            if (!title || !description || !imageUrl || !price) {
-                alert('Preencha todos os campos obrigatórios:\n- Título\n- Descrição\n- Imagem\n- Preço');
-                return;
-            }
-            
-            if (price <= 0) {
-                alert('O preço deve ser maior que zero!');
-                return;
-            }
-            
-            await supabaseClient
-                .from('raffles')
-                .update({active: false})
-                .eq('active', true);
-            
-            const newRaffle = {
-                title: title,
-                description: description,
-                image_url: imageUrl,
-                price_per_number: price,
-                total_numbers: parseInt(document.getElementById('adminTotalNumbers').value) || 100,
-                max_per_person: parseInt(document.getElementById('adminMaxPerPerson').value) || 0,
-                promo_enabled: document.getElementById('adminPromoEnabled').checked,
-                promo_discount: parseInt(document.getElementById('adminPromoDiscount').value) || 0,
-                promo_min_numbers: parseInt(document.getElementById('adminPromoMinNumbers').value) || 0,
-                active: true,
-                created_at: new Date().toISOString()
-            };
-            
-            const {data, error} = await supabaseClient
-                .from('raffles')
-                .insert(newRaffle)
-                .select()
-                .single();
-            
-            if (error) throw error;
-            
-            alert('Nova rifa criada com sucesso!\n\nA página será recarregada.');
-            location.reload();
-        } catch(error) {
-            alert('Erro ao criar rifa: ' + error.message);
-        }
-    };
+            const totalNumbers = parseInt(document.getElementById('adminTotalNumbers').value);
+            const maxPerPerson = parseInt(document.getElementById('adminMaxPerPerson').value) || 0;
+            const promoEnabled = document.getElementById('adminPromoEnabled').checked;
+            const promoDiscount = parseFloat(document.getElementById('adminPromoDiscount').value) || 0;
+            const promoMinNumbers = parseInt(document.getElementById('adminPromoMinNumbers').value) || 0;
 
-    window.saveRaffleConfig = async function() {
-        if (!currentRaffle || !currentRaffle.id) {
-            alert('Erro: Nenhuma rifa carregada para editar.');
-            return;
-        }
-        
-        try {
-            const updates = {
-                title: document.getElementById('adminTitle').value,
-                description: document.getElementById('adminDescription').value,
-                image_url: document.getElementById('adminImage').value,
-                price_per_number: parseFloat(document.getElementById('adminPrice').value),
-                total_numbers: parseInt(document.getElementById('adminTotalNumbers').value) || 100,
-                max_per_person: parseInt(document.getElementById('adminMaxPerPerson').value) || 0,
-                promo_enabled: document.getElementById('adminPromoEnabled').checked,
-                promo_discount: parseInt(document.getElementById('adminPromoDiscount').value) || 0,
-                promo_min_numbers: parseInt(document.getElementById('adminPromoMinNumbers').value) || 0
-            };
-            
+            if (!title || !imageUrl || !price || !totalNumbers) {
+                alert('❌ Preencha todos os campos obrigatórios!');
+                return;
+            }
+
             const {error} = await supabaseClient
                 .from('raffles')
-                .update(updates)
-                .eq('id', currentRaffle.id);
-            
+                .insert({
+                    title,
+                    description,
+                    image_url: imageUrl,
+                    price_per_number: price,
+                    total_numbers: totalNumbers,
+                    max_per_person: maxPerPerson,
+                    promo_enabled: promoEnabled,
+                    promo_discount: promoDiscount,
+                    promo_min_numbers: promoMinNumbers,
+                    active: true,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString()
+                });
+
             if (error) throw error;
-            
-            alert('Configurações salvas com sucesso!');
-            location.reload();
-        } catch(error) {
-            alert('Erro ao salvar configurações: ' + error.message);
+
+            alert('✅ Rifa criada com sucesso!');
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('❌ Erro ao criar rifa: ' + error.message);
         }
     };
 
     window.finishRaffle = async function() {
-        if (!currentRaffle || !currentRaffle.id) {
-            alert('Erro: Nenhuma rifa carregada.');
+        if (!currentRaffle) return;
+
+        if (!confirm('⚠️ Tem certeza que deseja finalizar esta rifa?\n\nEla será desativada e uma nova rifa poderá ser criada.')) {
             return;
         }
-        
-        if (!confirm('Tem certeza que deseja FINALIZAR esta rifa?\n\nEsta ação irá:\n- Desativar a rifa\n- Não será mais possível vender números\n- Você poderá criar uma nova rifa\n\nConfirmar?')) {
-            return;
-        }
-        
+
         try {
             const {error} = await supabaseClient
                 .from('raffles')
-                .update({active: false})
+                .update({
+                    active: false,
+                    updated_at: new Date().toISOString()
+                })
                 .eq('id', currentRaffle.id);
-            
+
             if (error) throw error;
-            
-            alert('Rifa finalizada com sucesso!\n\nAgora você pode criar uma nova rifa no painel admin.');
-            location.reload();
-        } catch(error) {
-            alert('Erro ao finalizar rifa: ' + error.message);
+
+            alert('✅ Rifa finalizada!');
+            window.location.reload();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('❌ Erro ao finalizar: ' + error.message);
         }
     };
 
-    window.exportSales = async function() {
-        try {
-            const {data, error} = await supabaseClient
-                .from('raffle_sales')
-                .select('*')
-                .eq('raffle_id', currentRaffle.id)
-                .eq('payment_status', 'approved')
-                .order('created_at', {ascending: true});
-            
-            if (error) throw error;
-            
-            if (!data || data.length === 0) {
-                alert('Nenhuma venda aprovada para exportar.');
-                return;
-            }
-            
-            const numberToName = {};
-            data.forEach(sale => {
-                const nameParts = sale.buyer_name.split(' ');
-                const firstName = nameParts[0] || '';
-                const lastName = nameParts[1] || '';
-                const shortName = lastName ? `${firstName} ${lastName}` : firstName;
-                
-                sale.numbers.forEach(num => {
-                    numberToName[num] = shortName;
-                });
-            });
-            
-            const sortedNumbers = Object.keys(numberToName).map(n => parseInt(n)).sort((a, b) => a - b);
-            
-            let txtContent = `LISTA DE NÚMEROS - ${currentRaffle.title}\n`;
-            txtContent += `Data de Exportação: ${new Date().toLocaleString('pt-BR')}\n`;
-            txtContent += `Total de Números Vendidos: ${sortedNumbers.length}\n`;
-            txtContent += `\n${'='.repeat(80)}\n\n`;
-            
-            sortedNumbers.forEach(num => {
-                txtContent += `${num} - ${numberToName[num]}\n`;
-            });
-            
-            txtContent += `\n${'='.repeat(80)}\n\n`;
-            txtContent += `RESUMO DE COMPRADORES:\n\n`;
-            
-            data.forEach(sale => {
-                const nameParts = sale.buyer_name.split(' ');
-                const firstName = nameParts[0] || '';
-                const lastName = nameParts[1] || '';
-                const shortName = lastName ? `${firstName} ${lastName}` : firstName;
-                
-                txtContent += `${shortName}: ${sale.numbers.length} número(s) - ${sale.numbers.sort((a, b) => a - b).join(', ')}\n`;
-            });
-            
-            const blob = new Blob([txtContent], {type: 'text/plain;charset=utf-8'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `numeros-rifa-${currentRaffle.title.replace(/\s+/g, '-')}-${Date.now()}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            
-            alert('Lista de números exportada com sucesso!');
-        } catch(error) {
-            alert('Erro ao exportar vendas: ' + error.message);
-        }
-    };
+    async function loadSalesData() {
+        if (!currentRaffle) return;
 
-    async function loadSales() {
         try {
-            const {data, error} = await supabaseClient
+            const {data: sales, error} = await supabaseClient
                 .from('raffle_sales')
                 .select('*')
                 .eq('raffle_id', currentRaffle.id)
                 .order('created_at', {ascending: false});
-            
+
             if (error) throw error;
-            
-            const salesList = document.getElementById('salesList');
-            
-            if (data.length === 0) {
-                salesList.innerHTML = '<p style="text-align:center;color:rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
-                return;
-            }
-            
-            salesList.innerHTML = data.map(sale => `
-                <div class="sale-item">
-                    <div class="sale-header">
-                        <span>${sale.buyer_name}</span>
-                        <span>${sale.payment_status === 'approved' ? '✅ Pago' : '⏳ Pendente'}</span>
-                    </div>
-                    <div>📱 ${sale.buyer_phone}</div>
-                    <div>💰 R$ ${sale.total_amount.toFixed(2)}</div>
-                    <div class="numbers-sold">
-                        ${sale.numbers.map(n => `<span class="number-badge">${n}</span>`).join('')}
-                    </div>
-                    ${sale.payment_status !== 'approved' ? `
-                        <div style="display:flex;gap:10px;margin-top:10px;">
-                            <button class="btn-approve-manual" onclick="approveSaleManually('${sale.id}')" style="flex:1;">✅ Aprovar</button>
-                            <button class="btn-remove-pending" onclick="removePendingSale('${sale.id}')" style="flex:1;">🗑️ Remover</button>
+
+            let totalSold = 0;
+            let numbersSold = 0;
+            const uniqueBuyers = new Set();
+
+            if (sales && sales.length > 0) {
+                sales.forEach(sale => {
+                    if (sale.payment_status === 'approved') {
+                        totalSold += parseFloat(sale.total_amount || 0);
+                        numbersSold += (sale.numbers ? sale.numbers.length : 0);
+                        uniqueBuyers.add(sale.buyer_phone);
+                    }
+                });
+
+                document.getElementById('adminTotalSold').textContent = `R$ ${totalSold.toFixed(2)}`;
+                document.getElementById('adminNumbersSold').textContent = `${numbersSold}/${currentRaffle.total_numbers}`;
+                document.getElementById('adminBuyersCount').textContent = uniqueBuyers.size;
+
+                const salesList = document.getElementById('salesList');
+                salesList.innerHTML = '';
+
+                sales.forEach(sale => {
+                    const saleItem = document.createElement('div');
+                    saleItem.style.cssText = `
+                        background: rgba(255,255,255,0.05);
+                        border: 2px solid rgba(148,49,206,0.3);
+                        border-radius: 10px;
+                        padding: 15px;
+                        margin-bottom: 10px;
+                    `;
+
+                    const statusColor = sale.payment_status === 'approved' ? '#00ff88' : 
+                                      sale.payment_status === 'reserved' ? '#ffa500' : '#ff4444';
+                    const statusText = sale.payment_status === 'approved' ? '✅ Aprovado' :
+                                     sale.payment_status === 'reserved' ? '⏳ Reservado' : '❌ Cancelado';
+
+                    saleItem.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <strong>${sale.buyer_name}</strong>
+                            <span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>
                         </div>
-                    ` : ''}
-                </div>
-            `).join('');
-        } catch(error) {
+                        <div style="font-size: 14px; color: rgba(255,255,255,0.7);">
+                            📱 ${sale.buyer_phone}<br>
+                            🎫 Números: ${sale.numbers ? sale.numbers.join(', ') : 'N/A'}<br>
+                            💰 R$ ${(sale.total_amount || 0).toFixed(2)}<br>
+                            📅 ${new Date(sale.created_at).toLocaleString('pt-BR')}
+                        </div>
+                    `;
+
+                    salesList.appendChild(saleItem);
+                });
+            } else {
+                document.getElementById('salesList').innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
+            }
+
+        } catch (error) {
             console.error('Erro ao carregar vendas:', error);
         }
     }
 
-    function updateAdminStats() {
-        const approvedSales = Array.from(document.querySelectorAll('.sale-item'))
-            .filter(item => item.textContent.includes('✅ Pago'));
-        
-        const totalSold = approvedSales.reduce((sum, item) => {
-            const amount = parseFloat(item.querySelector('div:nth-child(3)').textContent.replace('💰 R$ ', ''));
-            return sum + amount;
-        }, 0);
-        
-        document.getElementById('adminTotalSold').textContent = `R$ ${totalSold.toFixed(2)}`;
-        document.getElementById('adminNumbersSold').textContent = `${soldNumbers.size}/${currentRaffle.total_numbers || 100}`;
-        document.getElementById('adminBuyersCount').textContent = approvedSales.length;
-    }
+    window.exportSales = async function() {
+        if (!currentRaffle) return;
 
-    window.approveSaleManually = async function(saleId) {
-        if (!confirm('Aprovar este pagamento manualmente?\n\nOs números serão liberados para o cliente.')) {
-            return;
-        }
-        
         try {
-            const {data, error} = await supabaseClient
+            const {data: sales, error} = await supabaseClient
                 .from('raffle_sales')
-                .update({payment_status: 'approved'})
-                .eq('id', saleId)
-                .select();
-            
-            if (error) throw error;
-            
-            alert('Pagamento aprovado com sucesso!\n\nOs números foram liberados para o cliente.');
-            await loadSoldNumbers();
-            await loadSales();
-            updateAdminStats();
-        } catch(error) {
-            alert('Erro ao aprovar: ' + (error.message || 'Tente novamente.'));
-        }
-    };
+                .select('*')
+                .eq('raffle_id', currentRaffle.id)
+                .eq('payment_status', 'approved')
+                .order('created_at', {ascending: false});
 
-    window.removePendingSale = async function(saleId) {
-        if (!confirm('Tem certeza que deseja remover esta venda pendente?\n\nOs números serão liberados novamente.')) {
-            return;
-        }
-        
-        try {
-            const {error} = await supabaseClient
-                .from('raffle_sales')
-                .delete()
-                .eq('id', saleId);
-            
             if (error) throw error;
-            
-            alert('Venda pendente removida com sucesso!\n\nOs números foram liberados.');
-            await loadSoldNumbers();
-            await loadSales();
-            updateAdminStats();
-        } catch(error) {
-            alert('Erro ao remover venda: ' + (error.message || 'Tente novamente.'));
+
+            if (!sales || sales.length === 0) {
+                alert('Nenhuma venda aprovada para exportar');
+                return;
+            }
+
+            let csv = 'Nome,Telefone,Números,Valor,Data\n';
+            sales.forEach(sale => {
+                const numbers = sale.numbers ? sale.numbers.join(' ') : '';
+                const date = new Date(sale.created_at).toLocaleString('pt-BR');
+                csv += `"${sale.buyer_name}","${sale.buyer_phone}","${numbers}","R$ ${(sale.total_amount || 0).toFixed(2)}","${date}"\n`;
+            });
+
+            const blob = new Blob([csv], {type: 'text/csv'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vendas_${currentRaffle.title.replace(/[^a-z0-9]/gi, '_')}_${Date.now()}.csv`;
+            a.click();
+
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('Erro ao exportar: ' + error.message);
         }
     };
 
     window.drawWinner = async function() {
-        if (soldNumbers.size === 0) {
-            alert('Nenhum número foi vendido ainda!');
-            return;
-        }
-        
-        const numbersArray = Array.from(soldNumbers);
-        const winnerNumber = numbersArray[Math.floor(Math.random() * numbersArray.length)];
-        
-        const {data, error} = await supabaseClient
-            .from('raffle_sales')
-            .select('*')
-            .eq('raffle_id', currentRaffle.id)
-            .eq('payment_status', 'approved');
-        
-        if (error) {
+        if (!currentRaffle) return;
+
+        try {
+            const {data: sales, error} = await supabaseClient
+                .from('raffle_sales')
+                .select('*')
+                .eq('raffle_id', currentRaffle.id)
+                .eq('payment_status', 'approved');
+
+            if (error) throw error;
+
+            if (!sales || sales.length === 0) {
+                alert('Nenhuma venda aprovada ainda!');
+                return;
+            }
+
+            const allNumbers = [];
+            sales.forEach(sale => {
+                if (sale.numbers && Array.isArray(sale.numbers)) {
+                    sale.numbers.forEach(num => {
+                        allNumbers.push({number: num, buyer: sale.buyer_name, phone: sale.buyer_phone});
+                    });
+                }
+            });
+
+            if (allNumbers.length === 0) {
+                alert('Nenhum número vendido!');
+                return;
+            }
+
+            const winnerIndex = Math.floor(Math.random() * allNumbers.length);
+            const winner = allNumbers[winnerIndex];
+
+            document.getElementById('winnerText').innerHTML = `
+                <strong>Número sorteado: ${winner.number}</strong><br>
+                <strong>Ganhador: ${winner.buyer}</strong><br>
+                Telefone: ${winner.phone}
+            `;
+            document.getElementById('winnerResult').style.display = 'block';
+
+        } catch (error) {
             console.error('Erro:', error);
+            alert('Erro ao sortear: ' + error.message);
+        }
+    };
+
+    window.verificarDuplicados = async function() {
+        const btn = document.getElementById('btnVerificar');
+        const result = document.getElementById('duplicadosResult');
+        
+        if (!currentRaffle) {
+            result.innerHTML = '<p style="color: #ff4444;">❌ Nenhuma rifa ativa</p>';
             return;
         }
         
-        const winner = data.find(sale => sale.numbers.includes(winnerNumber));
+        btn.disabled = true;
+        btn.textContent = '⏳ Verificando...';
+        result.innerHTML = '<p>Carregando...</p>';
         
-        document.getElementById('winnerResult').style.display = 'block';
-        document.getElementById('winnerText').innerHTML = 
-            `<strong>Número sorteado:</strong> ${winnerNumber}<br>` +
-            `<strong>Vencedor:</strong> ${winner.buyer_name}<br>` +
-            `<strong>WhatsApp:</strong> ${winner.buyer_phone}`;
+        try {
+            const {data: sales, error} = await supabaseClient
+                .from('raffle_sales')
+                .select('id, buyer_name, buyer_phone, numbers, payment_status, created_at')
+                .eq('raffle_id', currentRaffle.id)
+                .in('payment_status', ['approved', 'reserved'])
+                .order('created_at', { ascending: true });
+            
+            if (error) throw error;
+            
+            if (!sales || sales.length === 0) {
+                result.innerHTML = '<p style="color: #00ff88;">✅ Nenhuma venda encontrada</p>';
+                btn.disabled = false;
+                btn.textContent = '🔍 Verificar Números Duplicados';
+                return;
+            }
+            
+            const numerosPorVenda = new Map();
+            const todosNumeros = [];
+            
+            sales.forEach(sale => {
+                if (sale.numbers && Array.isArray(sale.numbers)) {
+                    numerosPorVenda.set(sale.id, {
+                        ...sale,
+                        numeros: sale.numbers
+                    });
+                    sale.numbers.forEach(num => {
+                        todosNumeros.push({ numero: num, saleId: sale.id });
+                    });
+                }
+            });
+            
+            const contagem = {};
+            todosNumeros.forEach(item => {
+                if (!contagem[item.numero]) {
+                    contagem[item.numero] = [];
+                }
+                contagem[item.numero].push(item.saleId);
+            });
+            
+            const duplicados = {};
+            Object.keys(contagem).forEach(numero => {
+                if (contagem[numero].length > 1) {
+                    duplicados[numero] = contagem[numero];
+                }
+            });
+            
+            if (Object.keys(duplicados).length === 0) {
+                result.innerHTML = '<p style="color: #00ff88; font-size: 18px; font-weight: 600;">✅ NENHUM NÚMERO DUPLICADO!</p><p style="color: rgba(255,255,255,0.6); margin-top: 10px;">Todas as vendas estão corretas.</p>';
+                btn.disabled = false;
+                btn.textContent = '🔍 Verificar Números Duplicados';
+                return;
+            }
+            
+            let html = '<div style="background: rgba(255,68,68,0.1); border: 2px solid #ff4444; border-radius: 10px; padding: 20px; margin-bottom: 20px;">';
+            html += '<h3 style="color: #ff4444; margin-bottom: 15px;">⚠️ NÚMEROS DUPLICADOS ENCONTRADOS!</h3>';
+            
+            Object.keys(duplicados).forEach(numero => {
+                const saleIds = duplicados[numero];
+                html += `<div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 10px;">`;
+                html += `<strong style="color: #ff4444;">Número ${numero}</strong> aparece em ${saleIds.length} vendas:<br>`;
+                
+                saleIds.forEach((saleId, index) => {
+                    const venda = numerosPorVenda.get(saleId);
+                    const data = new Date(venda.created_at).toLocaleString('pt-BR');
+                    html += `<span style="font-size: 13px; color: rgba(255,255,255,0.7);">
+                        ${index + 1}. ${venda.buyer_name} (${venda.buyer_phone}) - ${data} - ${venda.payment_status}
+                    </span><br>`;
+                });
+                
+                html += `</div>`;
+            });
+            
+            html += '</div>';
+            html += `<button class="btn-primary" onclick="realocarNumerosDuplicados()" style="background: linear-gradient(135deg, #00ff88, #00dd77); color: black; font-size: 18px; padding: 15px 30px;">🔄 REALOCAR NÚMEROS DUPLICADOS AUTOMATICAMENTE</button>`;
+            html += `<p style="margin-top: 15px; font-size: 13px; color: rgba(255,255,255,0.5);">⚠️ A realocação manterá a PRIMEIRA compra de cada número (mais antiga) e realocará as compras posteriores para números disponíveis.</p>`;
+            
+            result.innerHTML = html;
+            btn.disabled = false;
+            btn.textContent = '🔍 Verificar Números Duplicados';
+            
+        } catch (error) {
+            console.error('Erro ao verificar duplicados:', error);
+            result.innerHTML = `<p style="color: #ff4444;">❌ Erro: ${error.message}</p>`;
+            btn.disabled = false;
+            btn.textContent = '🔍 Verificar Números Duplicados';
+        }
     };
 
-    window.showConfirmationModal = function(numbers) {
-        const numbersContainer = document.getElementById('confirmationNumbers');
-        numbersContainer.innerHTML = '';
+    window.realocarNumerosDuplicados = async function() {
+        if (!confirm('⚠️ ATENÇÃO!\n\nEsta ação vai REALOCAR números duplicados automaticamente.\n\nA primeira compra de cada número será mantida.\nAs compras posteriores receberão novos números disponíveis.\n\nDeseja continuar?')) {
+            return;
+        }
         
-        numbers.sort((a, b) => a - b).forEach((num, index) => {
-            const numberBox = document.createElement('div');
-            numberBox.className = 'confirmation-number';
-            numberBox.textContent = num;
-            numberBox.style.animationDelay = `${index * 0.1}s`;
-            numbersContainer.appendChild(numberBox);
+        const result = document.getElementById('duplicadosResult');
+        result.innerHTML = '<p style="color: #ffa500;">⏳ Realocando números... Aguarde...</p>';
+        
+        try {
+            const {data: sales, error: salesError} = await supabaseClient
+                .from('raffle_sales')
+                .select('id, buyer_name, numbers, payment_status, created_at')
+                .eq('raffle_id', currentRaffle.id)
+                .in('payment_status', ['approved', 'reserved'])
+                .order('created_at', { ascending: true });
+            
+            if (salesError) throw salesError;
+            
+            const numerosAlocados = new Set();
+            const vendasParaAtualizar = [];
+            
+            sales.forEach(sale => {
+                const numerosNovos = [];
+                const numerosDuplicados = [];
+                
+                if (sale.numbers && Array.isArray(sale.numbers)) {
+                    sale.numbers.forEach(num => {
+                        if (numerosAlocados.has(num)) {
+                            numerosDuplicados.push(num);
+                        } else {
+                            numerosAlocados.add(num);
+                            numerosNovos.push(num);
+                        }
+                    });
+                }
+                
+                if (numerosDuplicados.length > 0) {
+                    vendasParaAtualizar.push({
+                        id: sale.id,
+                        buyer_name: sale.buyer_name,
+                        numerosOriginais: sale.numbers,
+                        numerosManter: numerosNovos,
+                        numerosRealocar: numerosDuplicados.length
+                    });
+                }
+            });
+            
+            if (vendasParaAtualizar.length === 0) {
+                result.innerHTML = '<p style="color: #00ff88;">✅ Nenhuma realocação necessária!</p>';
+                return;
+            }
+            
+            const todosNumeros = Array.from({length: currentRaffle.total_numbers}, (_, i) => i + 1);
+            const numerosDisponiveis = todosNumeros.filter(n => !numerosAlocados.has(n));
+            
+            if (numerosDisponiveis.length < vendasParaAtualizar.reduce((sum, v) => sum + v.numerosRealocar, 0)) {
+                result.innerHTML = '<p style="color: #ff4444;">❌ ERRO: Não há números disponíveis suficientes para realocar!</p>';
+                return;
+            }
+            
+            let indiceDisponivel = 0;
+            const atualizacoes = [];
+            
+            for (const venda of vendasParaAtualizar) {
+                const novosNumeros = [...venda.numerosManter];
+                
+                for (let i = 0; i < venda.numerosRealocar; i++) {
+                    const novoNum = numerosDisponiveis[indiceDisponivel++];
+                    novosNumeros.push(novoNum);
+                    numerosAlocados.add(novoNum);
+                }
+                
+                const {error: updateError} = await supabaseClient
+                    .from('raffle_sales')
+                    .update({ numbers: novosNumeros.sort((a, b) => a - b) })
+                    .eq('id', venda.id);
+                
+                if (updateError) throw updateError;
+                
+                atualizacoes.push({
+                    buyer: venda.buyer_name,
+                    original: venda.numerosOriginais.join(', '),
+                    novo: novosNumeros.sort((a, b) => a - b).join(', ')
+                });
+            }
+            
+            let html = '<div style="background: rgba(0,255,136,0.1); border: 2px solid #00ff88; border-radius: 10px; padding: 20px;">';
+            html += `<h3 style="color: #00ff88; margin-bottom: 15px;">✅ REALOCAÇÃO CONCLUÍDA!</h3>`;
+            html += `<p style="margin-bottom: 15px;">${atualizacoes.length} vendas foram atualizadas:</p>`;
+            
+            atualizacoes.forEach((atualização, index) => {
+                html += `<div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 13px;">`;
+                html += `<strong>${index + 1}. ${atualização.buyer}</strong><br>`;
+                html += `<span style="color: #ff4444;">Antes: ${atualização.original}</span><br>`;
+                html += `<span style="color: #00ff88;">Depois: ${atualização.novo}</span>`;
+                html += `</div>`;
+            });
+            
+            html += '<p style="margin-top: 15px; color: rgba(255,255,255,0.7);">✅ Os números foram atualizados no banco de dados!</p>';
+            html += '</div>';
+            
+            result.innerHTML = html;
+            
+            await loadSoldNumbers();
+            renderNumbers();
+            
+        } catch (error) {
+            console.error('Erro ao realocar:', error);
+            result.innerHTML = `<p style="color: #ff4444;">❌ Erro ao realocar: ${error.message}</p>`;
+        }
+    };
+
+    const inputNome = document.getElementById('inputNome');
+    const inputTelefone = document.getElementById('inputTelefone');
+
+    if (inputNome) {
+        inputNome.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                inputTelefone.focus();
+            }
         });
-        
-        document.getElementById('confirmationModal').style.display = 'flex';
-        document.getElementById('confirmationModal').classList.add('active');
-    };
+    }
 
-    window.closeConfirmationModal = function() {
-        document.getElementById('confirmationModal').classList.remove('active');
-        document.getElementById('confirmationModal').style.display = 'none';
-        location.reload();
-    };
+    if (inputTelefone) {
+        inputTelefone.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                processarCompra();
+            }
+        });
+    }
 
     init();
 })();
