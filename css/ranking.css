@@ -166,7 +166,7 @@ body {
 
 .ranking-item-inactive .ranking-position,
 .ranking-item-inactive .ranking-name,
-.ranking-item-inactive .ranking-numbers,
+.ranking-item-inactive .ranking-patente,
 .ranking-item-inactive .ranking-points-value,
 .ranking-item-inactive .ranking-points-label {
     color: rgba(255, 255, 255, 0.3) !important;
@@ -211,9 +211,10 @@ body {
     margin-bottom: 3px;
 }
 
-.ranking-numbers {
+.ranking-patente {
     font-size: 14px;
-    color: rgba(255, 255, 255, 0.5);
+    font-weight: 700;
+    text-shadow: 0 0 10px currentColor;
 }
 
 .ranking-points {
