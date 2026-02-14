@@ -575,8 +575,7 @@
                     max_per_person: maxPerPerson,
                     promo_enabled: promoEnabled,
                     promo_discount: promoDiscount,
-                    promo_min_numbers: promoMinNumbers,
-                    updated_at: new Date().toISOString()
+                    promo_min_numbers: promoMinNumbers
                 })
                 .eq('id', currentRaffle.id);
 
@@ -622,9 +621,7 @@
                     promo_enabled: promoEnabled,
                     promo_discount: promoDiscount,
                     promo_min_numbers: promoMinNumbers,
-                    active: true,
-                    created_at: new Date().toISOString(),
-                    updated_at: new Date().toISOString()
+                    active: true
                 });
 
             if (error) throw error;
@@ -649,8 +646,7 @@
             const {error} = await supabaseClient
                 .from('raffles')
                 .update({
-                    active: false,
-                    updated_at: new Date().toISOString()
+                    active: false
                 })
                 .eq('id', currentRaffle.id);
 
