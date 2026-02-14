@@ -668,6 +668,7 @@
                 .from('raffle_sales')
                 .select('*')
                 .eq('raffle_id', currentRaffle.id)
+                .eq('payment_status', 'approved')
                 .order('created_at', {ascending: false});
 
             if (error) throw error;
@@ -678,11 +679,9 @@
 
             if (sales && sales.length > 0) {
                 sales.forEach(sale => {
-                    if (sale.payment_status === 'approved') {
-                        totalSold += parseFloat(sale.total_amount || 0);
-                        numbersSold += (sale.numbers ? sale.numbers.length : 0);
-                        uniqueBuyers.add(sale.buyer_phone);
-                    }
+                    totalSold += parseFloat(sale.total_amount || 0);
+                    numbersSold += (sale.numbers ? sale.numbers.length : 0);
+                    uniqueBuyers.add(sale.buyer_phone);
                 });
 
                 document.getElementById('adminTotalSold').textContent = `R$ ${totalSold.toFixed(2)}`;
@@ -694,17 +693,12 @@
 
                 sales.forEach(sale => {
                     const saleItem = document.createElement('div');
-                    saleItem.style.cssText = 'background: rgba(255,255,255,0.05); border: 2px solid rgba(148,49,206,0.3); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
-
-                    const statusColor = sale.payment_status === 'approved' ? '#00ff88' : 
-                                      sale.payment_status === 'reserved' ? '#ffa500' : '#ff4444';
-                    const statusText = sale.payment_status === 'approved' ? '✅ Aprovado' :
-                                     sale.payment_status === 'reserved' ? '⏳ Reservado' : '❌ Cancelado';
+                    saleItem.style.cssText = 'background: rgba(0,255,136,0.05); border: 2px solid rgba(0,255,136,0.3); border-radius: 10px; padding: 15px; margin-bottom: 10px;';
 
                     saleItem.innerHTML = `
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <strong>${sale.buyer_name}</strong>
-                            <span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>
+                            <strong style="font-size: 16px;">${sale.buyer_name}</strong>
+                            <span style="color: #00ff88; font-weight: 600;">✅ Aprovado</span>
                         </div>
                         <div style="font-size: 14px; color: rgba(255,255,255,0.7);">
                             📱 ${sale.buyer_phone}<br>
@@ -717,7 +711,10 @@
                     salesList.appendChild(saleItem);
                 });
             } else {
-                document.getElementById('salesList').innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda ainda</p>';
+                document.getElementById('adminTotalSold').textContent = 'R$ 0,00';
+                document.getElementById('adminNumbersSold').textContent = `0/${currentRaffle.total_numbers}`;
+                document.getElementById('adminBuyersCount').textContent = '0';
+                document.getElementById('salesList').innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.4);">Nenhuma venda aprovada ainda</p>';
             }
 
         } catch (error) {
