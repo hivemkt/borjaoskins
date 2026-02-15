@@ -5,12 +5,26 @@
     const CLIENT_EMAIL = 'dproartes@gmail.com';
     const ADMIN_PASSWORD_HASH = window.ENV.ADMIN_HASH;
 
-    let supabaseClient = null;
+  let supabaseClient = null;
+let initAttempts = 0;
+const MAX_INIT_ATTEMPTS = 3;
+
+function initSupabase() {
     try {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        if (window.supabase && window.ENV) {
+            supabaseClient = window.supabase.createClient(
+                window.ENV.SUPABASE_URL, 
+                window.ENV.SUPABASE_KEY
+            );
+            console.log('✅ Supabase inicializado');
+            return true;
+        }
+        return false;
     } catch(error) {
-        console.error('Erro ao conectar');
+        console.error('❌ Erro ao inicializar:', error);
+        return false;
     }
+}
 
     let currentRaffle = null;
     let selectedNumbers = new Set();
