@@ -9,20 +9,62 @@
 let initAttempts = 0;
 const MAX_INIT_ATTEMPTS = 3;
 
-function initSupabase() {
-    try {
-        if (window.supabase && window.ENV) {
-            supabaseClient = window.supabase.createClient(
-                window.ENV.SUPABASE_URL, 
-                window.ENV.SUPABASE_KEY
-            );
-            console.log('✅ Supabase inicializado');
-            return true;
+async function init() {
+    console.log('🔵 Iniciando... Tentativa', initAttempts + 1);
+    
+    if (!supabaseClient && !initSupabase()) {
+        if (initAttempts < MAX_INIT_ATTEMPTS) {
+            initAttempts++;
+            console.log('⏳ Aguardando libraries...');
+            setTimeout(init, 500);
+            return;
         }
-        return false;
-    } catch(error) {
-        console.error('❌ Erro ao inicializar:', error);
-        return false;
+        
+        console.error('❌ Falha após', MAX_INIT_ATTEMPTS, 'tentativas');
+        showError('Erro de Conexão', 'Não foi possível conectar. Recarregue a página.');
+        return;
+    }
+    
+    console.log('🔍 Carregando rifa...');
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        await loadRaffleWithAbort(controller.signal);
+        clearTimeout(timeoutId);
+        
+        if (!currentRaffle) {
+            console.log('⚠️ Sem rifas');
+            return;
+        }
+        
+        console.log('✅ Rifa:', currentRaffle.title);
+        console.log('📊 Carregando números...');
+        
+        loadSoldNumbers().then(() => {
+            renderNumbers();
+            updateCheckout();
+            console.log('✅ Pronto!');
+        });
+        
+        setInterval(async () => {
+            try {
+                await loadSoldNumbers();
+                renderNumbers();
+            } catch (error) {
+                console.error('⚠️ Erro ao atualizar:', error);
+            }
+        }, 15000);
+        
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.error('❌ Timeout');
+            showError('Conexão Lenta', 'A rifa está demorando. Verifique sua internet.');
+        } else {
+            console.error('❌ Erro:', error);
+            showError('Erro ao Carregar', 'Não foi possível carregar a rifa.');
+        }
     }
 }
 
